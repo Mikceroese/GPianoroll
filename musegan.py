@@ -2,6 +2,7 @@
 # Python module for the MuseGAN model           #
 #                                               #
 # Author: Miguel Marcos                         #
+# (Based on the original MuseGAN notebook)      #
 #################################################
 
 from os import remove
@@ -29,6 +30,8 @@ beat_resolution = 4  # temporal resolution of a beat (in timestep)
 n_beats_per_measure = 4
 measure_resolution = 4 * beat_resolution
 tempo_array = np.full((n_measures * n_beats_per_measure * beat_resolution, 1), tempo)
+
+latent_dim = 128
 
 # -.-*-.-*-.-*-.-*-.-*-.-*-.-*-.-*-.-*-.-*-.-*- #
 
@@ -66,7 +69,7 @@ class Generator(torch.nn.Module):
         super().__init__()        
 
         # Shared network
-        self.transconv0 = GeneratorBlock(256, 256, (4, 1, 1), (4, 1, 1)) # 4, 1, 1
+        self.transconv0 = GeneratorBlock(latent_dim, 256, (4, 1, 1), (4, 1, 1)) # 4, 1, 1
         self.transconv1 = GeneratorBlock(256, 128, (1, 4, 3), (1, 4, 3)) # 4, 4, 3
         self.transconv2 = GeneratorBlock(128, 64, (1, 2, 2), (1, 2, 2)) # 4, 8, 6
 
