@@ -1,16 +1,8 @@
-<script src="https://cdn.jsdelivr.net/combine/npm/tone@14.7.58,npm/@magenta/music@1.23.1/es6/core.js,npm/focus-visible@5,npm/html-midi-player@1.4.0"></script>
-
 # GPianoroll
 
 Music is a mix of science and humanism. A musical piece's impression depends on the physical properties of the sounds that make it, but also on the listener. In this project, we propose an evaluation method that leverages human feedback as our quality measurement for music. We perform Bayesian Optimization over a low-dimensional latent space from where we take samples, which are later mapped to the high-dimensional latent space of the musical score generator MuseGAN, and ask the final user to evaluate how they like the output of the model. At the end of the process, our method finds which point of the latent space is more to the subject's liking, and extracts one final sample. 
 
-We built our own version of MuseGAN, completely in PyTorch, and featuring Drums, Guitar and Bass. Here are some samples:
-
-<div>
-<midi-visualizer type="piano-roll" id="mainVisualizer" src="https://cdn.jsdelivr.net/gh/cifkao/html-midi-player@2b12128/jazz.mid"></midi-visualizer>
-<midi-player src="https://cdn.jsdelivr.net/gh/cifkao/html-midi-player@2b12128/jazz.mid" sound-font visualizer="#mainVisualizer" id="mainPlayer">
-</midi-player>
-</div>
+Want to see some of our samples? Check out our [GitHub pages](https://mikceroese.github.io/GPianoroll) site
 
 # Files
 

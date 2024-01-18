@@ -1,0 +1,31 @@
+<script src="https://cdn.jsdelivr.net/combine/npm/tone@14.7.58,npm/@magenta/music@1.23.1/es6/core.js,npm/focus-visible@5,npm/html-midi-player@1.4.0"></script>
+
+<h1 id="gpianoroll">GPianoroll</h1>
+<p>Music is a mix of science and humanism. A musical piece&#39;s impression depends on the physical properties of the sounds that make it, but also on the listener. In this project, we propose an evaluation method that leverages human feedback as our quality measurement for music. We perform Bayesian Optimization over a low-dimensional latent space from where we take samples, which are later mapped to the high-dimensional latent space of the musical score generator MuseGAN, and ask the final user to evaluate how they like the output of the model. At the end of the process, our method finds which point of the latent space is more to the subject&#39;s liking, and extracts one final sample. </p>
+<p>We built our own version of MuseGAN, completely in PyTorch, and featuring Drums, Guitar and Bass. Here are some samples:</p>
+<div>
+<midi-visualizer type="piano-roll" id="mainVisualizer" src="https://cdn.jsdelivr.net/gh/cifkao/html-midi-player@2b12128/jazz.mid"></midi-visualizer>
+<midi-player src="https://cdn.jsdelivr.net/gh/cifkao/html-midi-player@2b12128/jazz.mid" sound-font visualizer="#mainVisualizer" id="mainPlayer">
+</midi-player>
+</div>
+
+<h1 id="files">Files</h1>
+<p>Our work includes the following files:</p>
+<ul>
+<li><strong>A notebook for training our baseline</strong>, which is a custom version of the <strong>MuseGAN</strong> model, built with PyTorch.
+<code>MuseGAN_DBG_chroma.ipynb</code> <a href="https://colab.research.google.com/github/mikceroese/GPianoroll/MuseGAN_DBG_chroma.ipynb"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"></a>
+The notebook is completely runnable in Colab, and we optimized RAM and GPU usage for fully online reproducibility!</li>
+<li><strong>A pretrained version</strong> of the baseline, result of running the notebook.</li>
+<li><strong>Code for running experiments</strong>, which include the description of the model, a rudimentary GUI, and auxiliary code for loading the model and running the experiments. </li>
+</ul>
+<h1 id="running-the-code">Running the code</h1>
+<p>In order to run the code you need to:</p>
+<ul>
+<li>Install the necessary dependencies. For the notebook, dependencies are included in the first cell.
+Most importantly, you must install pypianoroll, PrettyMIDI and BayesOpt locally to run the optimization.</li>
+<li>Select a trained model. You can use the provided checkpoint or train another one using the provided notebook.
+In case you decide to use the notebook, it contains instructions for generating the model and saving it.</li>
+<li>Select a soundfont in order to play the MIDI files using the built in interface. There are plenty of
+online sources for free-use .sf2 files.</li>
+</ul>
+<p>After everything is in place, you can run the optimization process by executing gpianoroll.py in your interpreter</p>
