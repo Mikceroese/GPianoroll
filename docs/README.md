@@ -24,7 +24,7 @@
 <hr />
 <p style='margin-top:10px'>And here are some of our volunteers' favourite pieces!</p>
 
-<div style="display:flex; flex-wrap:wrap">
+<div style="display:flex; flex-wrap:wrap; align-items:stretch">
 <div>
     <midi-visualizer type="piano-roll" id="Visualizer1" src="sample_01.mid"></midi-visualizer>
     <midi-player src="sample_01.mid" sound-font visualizer="#Visualizer1" id="Player1">
