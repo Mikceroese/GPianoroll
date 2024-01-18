@@ -21,6 +21,7 @@
     </midi-player>
 </div>
 
+<hr />
 <p style='margin-top:10px'>And here are some of our volunteers' favourite pieces!</p>
 
 <div>
@@ -44,6 +45,7 @@
     </midi-player>
 </div>
 
+<hr />
 <p style='margin-top:10px'>Want to try your hand with optimization? Check our <a href="https://github.com/mikceroese/GPianoroll">GitHub repository</a> and download the code!</p>
 
 <p>Huge thanks to @cifkao for the <a href="https://github.com/cifkao/html-midi-player/">MIDI visualizer</a>.</p>
