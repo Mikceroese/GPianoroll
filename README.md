@@ -11,7 +11,8 @@ Our work includes the following files:
    `MuseGAN_DBG_chroma.ipynb` [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/mikceroese/GPianoroll/MuseGAN_DBG_chroma.ipynb)
    The notebook is completely runnable in Colab, and we optimized RAM and GPU usage for fully online reproducibility!
  - **A pretrained version** of the baseline, result of running the notebook.
- - **Code for running experiments**, which include the description of the model, a rudimentary GUI, and auxiliary code for loading the model and running the experiments. 
+ - **Code for running experiments**, which include the description of the model, a GUI, and auxiliary code for loading the model and running the experiments. 
+ - **Example MIDI files**, available in the 'docs' folder.
 
 
 # Running the code
@@ -23,6 +24,7 @@ In order to run the code you need to:
   In case you decide to use the notebook, it contains instructions for generating the model and saving it.
 - Select a soundfont in order to play the MIDI files using the built in interface. There are plenty of
   online sources for free-use .sf2 files.
+- Make sure the code in gpianoroll.py matches your configuration (future work may include command line options for this)
 
-After everything is in place, you can run the optimization process by executing gpianoroll.py in your interpreter
+After everything is in place, you can run the optimization process by executing gpianoroll.py in your interpreter.
 

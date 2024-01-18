@@ -16,31 +16,31 @@
 <p>We start from the middle of the latent space. This is what the initial sample sounds like:</p>
 
 <div>
-    <midi-visualizer type="piano-roll" id="midVisualizer" src="https://github.com/mikceroese/GPianoroll/samples/mid_sample.mid"></midi-visualizer>
-    <midi-player src="https://github.com/mikceroese/GPianoroll/samples/mid_sample.mid" sound-font visualizer="#midVisualizer" id="midPlayer">
+    <midi-visualizer type="piano-roll" id="midVisualizer" src="mid_sample.mid"></midi-visualizer>
+    <midi-player src="mid_sample.mid" sound-font visualizer="#midVisualizer" id="midPlayer">
     </midi-player>
 </div>
 
-<p>And here are some of our volunteer's favourite pieces!</p>
+<p>And here are some of our volunteers' favourite pieces!</p>
 
 <div>
-    <midi-visualizer type="piano-roll" id="Visualizer1" src="https://github.com/mikceroese/GPianoroll/samples/sample_01.mid"></midi-visualizer>
-    <midi-player src="https://github.com/mikceroese/GPianoroll/samples/sample_01.mid" sound-font visualizer="#Visualizer1" id="Player1">
+    <midi-visualizer type="piano-roll" id="Visualizer1" src="sample_01.mid"></midi-visualizer>
+    <midi-player src="sample_01.mid" sound-font visualizer="#Visualizer1" id="Player1">
     </midi-player>
 </div>
 <div>
-    <midi-visualizer type="piano-roll" id="Visualizer2" src="https://github.com/mikceroese/GPianoroll/samples/sample_06.mid"></midi-visualizer>
-    <midi-player src="https://github.com/mikceroese/GPianoroll/samples/sample_06.mid" sound-font visualizer="#Visualizer2" id="Player2">
+    <midi-visualizer type="piano-roll" id="Visualizer2" src="sample_06.mid"></midi-visualizer>
+    <midi-player src="sample_06.mid" sound-font visualizer="#Visualizer2" id="Player2">
     </midi-player>
 </div>
 <div>
-    <midi-visualizer type="piano-roll" id="Visualizer3" src="https://github.com/mikceroese/GPianoroll/samples/sample_03.mid"></midi-visualizer>
-    <midi-player src="https://github.com/mikceroese/GPianoroll/samples/sample_03.mid" sound-font visualizer="#Visualizer3" id="Player3">
+    <midi-visualizer type="piano-roll" id="Visualizer3" src="sample_03.mid"></midi-visualizer>
+    <midi-player src="sample_03.mid" sound-font visualizer="#Visualizer3" id="Player3">
     </midi-player>
 </div>
 <div>
-    <midi-visualizer type="piano-roll" id="Visualizer4" src="https://github.com/mikceroese/GPianoroll/samples/sample_07.mid"></midi-visualizer>
-    <midi-player src="https://github.com/mikceroese/GPianoroll/samples/sample_07.mid" sound-font visualizer="#Visualizer4" id="Player4">
+    <midi-visualizer type="piano-roll" id="Visualizer4" src="sample_07.mid"></midi-visualizer>
+    <midi-player src="sample_07.mid" sound-font visualizer="#Visualizer4" id="Player4">
     </midi-player>
 </div>
 
