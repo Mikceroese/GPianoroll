@@ -19,7 +19,7 @@ Our work includes the following files:
 
 In order to run the code you need to:
 - Install the necessary dependencies. For the notebook, dependencies are included in the first cell.
-  Most importantly, you must install pypianoroll, PrettyMIDI and BayesOpt locally to run the optimization.
+  Most importantly, you must install PyTorch, pypianoroll, PrettyMIDI and BayesOpt locally to run the optimization.
 - Select a trained model. You can use the provided checkpoint or train another one using the provided notebook.
   In case you decide to use the notebook, it contains instructions for generating the model and saving it.
 - Select a soundfont in order to play the MIDI files using the built in interface. There are plenty of
