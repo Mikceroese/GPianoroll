@@ -11,7 +11,7 @@
 </midi-player>
 </div>
 
-<h1 id="opt">The optimization system</h1>
+<h1 id="opt">The results</h1>
 <p>We ask users to explore the latent space of the model and give (numerical) scores to the generated (musical) scores!</p>
 <p>We start from the middle of the latent space. This is what the initial sample sounds like:</p>
 
