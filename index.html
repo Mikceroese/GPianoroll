@@ -1,31 +1,49 @@
 <script src="https://cdn.jsdelivr.net/combine/npm/tone@14.7.58,npm/@magenta/music@1.23.1/es6/core.js,npm/focus-visible@5,npm/html-midi-player@1.4.0"></script>
 
-<h1 id="gpianoroll">GPianoroll</h1>
-<p>Music is a mix of science and humanism. A musical piece&#39;s impression depends on the physical properties of the sounds that make it, but also on the listener. In this project, we propose an evaluation method that leverages human feedback as our quality measurement for music. We perform Bayesian Optimization over a low-dimensional latent space from where we take samples, which are later mapped to the high-dimensional latent space of the musical score generator MuseGAN, and ask the final user to evaluate how they like the output of the model. At the end of the process, our method finds which point of the latent space is more to the subject&#39;s liking, and extracts one final sample. </p>
-<p>We built our own version of MuseGAN, completely in PyTorch, and featuring Drums, Guitar and Bass. Here are some samples:</p>
+<p>Music is a mix or art and science, a way for humans to express themselves, but also a field with heavy maths and physics involved! A musical piece&#39;s impression depends on the physical properties of the sounds that make it, but also on the listener they reach out to. In this project, we propose an evaluation method for Deep Learning generative models that leverages human feedback as our quality measurement for music. We perform Bayesian Optimization over a low-dimensional latent space where we take samples from, map these samples to the high-dimensional latent space of the musical score generator MuseGAN, and ask the final user to evaluate how they like the output of the model. After some BO iterations, our method finds which point of the latent space is more to the subject&#39;s liking, and extracts one final sample. </p>
+
+<h1 id="model">The model</h1>
+
+<p>We built our own custom version of MuseGAN, completely in PyTorch, and featuring Drums, Guitar and Bass. Here are some samples:</p>
 <div>
-<midi-visualizer type="piano-roll" id="mainVisualizer" src="https://cdn.jsdelivr.net/gh/cifkao/html-midi-player@2b12128/jazz.mid"></midi-visualizer>
-<midi-player src="https://cdn.jsdelivr.net/gh/cifkao/html-midi-player@2b12128/jazz.mid" sound-font visualizer="#mainVisualizer" id="mainPlayer">
+<midi-visualizer type="piano-roll" id="museGANVisualizer" src="https://github.com/mikceroese/GPianoroll/Samples/MuseGAN_DBG_samples.mid"></midi-visualizer>
+<midi-player src="https://github.com/mikceroese/GPianoroll/Samples/MuseGAN_DBG_samples.mid" sound-font visualizer="#museGANVisualizer" id="museGANPlayer">
 </midi-player>
 </div>
 
-<h1 id="files">Files</h1>
-<p>Our work includes the following files:</p>
-<ul>
-<li><strong>A notebook for training our baseline</strong>, which is a custom version of the <strong>MuseGAN</strong> model, built with PyTorch.
-<code>MuseGAN_DBG_chroma.ipynb</code> <a href="https://colab.research.google.com/github/mikceroese/GPianoroll/MuseGAN_DBG_chroma.ipynb"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"></a>
-The notebook is completely runnable in Colab, and we optimized RAM and GPU usage for fully online reproducibility!</li>
-<li><strong>A pretrained version</strong> of the baseline, result of running the notebook.</li>
-<li><strong>Code for running experiments</strong>, which include the description of the model, a rudimentary GUI, and auxiliary code for loading the model and running the experiments. </li>
-</ul>
-<h1 id="running-the-code">Running the code</h1>
-<p>In order to run the code you need to:</p>
-<ul>
-<li>Install the necessary dependencies. For the notebook, dependencies are included in the first cell.
-Most importantly, you must install pypianoroll, PrettyMIDI and BayesOpt locally to run the optimization.</li>
-<li>Select a trained model. You can use the provided checkpoint or train another one using the provided notebook.
-In case you decide to use the notebook, it contains instructions for generating the model and saving it.</li>
-<li>Select a soundfont in order to play the MIDI files using the built in interface. There are plenty of
-online sources for free-use .sf2 files.</li>
-</ul>
-<p>After everything is in place, you can run the optimization process by executing gpianoroll.py in your interpreter</p>
+<h1 id="opt">The optimization system</h1>
+<p>We ask users to explore the latent space of the model and give (numerical) scores to the generated (musical) scores!</p>
+<p>We start from the middle of the latent space. This is what the initial sample sounds like:</p>
+
+<div>
+    <midi-visualizer type="piano-roll" id="midVisualizer" src="https://github.com/mikceroese/GPianoroll/Samples/mid_sample.mid"></midi-visualizer>
+    <midi-player src="https://github.com/mikceroese/GPianoroll/Samples/mid_sample.mid" sound-font visualizer="#midVisualizer" id="midPlayer">
+    </midi-player>
+</div>
+
+<p>And here are some of our volunteer's favourite pieces!</p>
+
+<div>
+    <midi-visualizer type="piano-roll" id="Visualizer1" src="https://github.com/mikceroese/GPianoroll/Samples/sample_01.mid"></midi-visualizer>
+    <midi-player src="https://github.com/mikceroese/GPianoroll/Samples/sample_01.mid" sound-font visualizer="#Visualizer1" id="Player1">
+    </midi-player>
+</div>
+<div>
+    <midi-visualizer type="piano-roll" id="Visualizer2" src="https://github.com/mikceroese/GPianoroll/Samples/sample_06.mid"></midi-visualizer>
+    <midi-player src="https://github.com/mikceroese/GPianoroll/Samples/sample_06.mid" sound-font visualizer="#Visualizer2" id="Player2">
+    </midi-player>
+</div>
+<div>
+    <midi-visualizer type="piano-roll" id="Visualizer3" src="https://github.com/mikceroese/GPianoroll/Samples/sample_03.mid"></midi-visualizer>
+    <midi-player src="https://github.com/mikceroese/GPianoroll/Samples/sample_03.mid" sound-font visualizer="#Visualizer3" id="Player3">
+    </midi-player>
+</div>
+<div>
+    <midi-visualizer type="piano-roll" id="Visualizer4" src="https://github.com/mikceroese/GPianoroll/Samples/sample_07.mid"></midi-visualizer>
+    <midi-player src="https://github.com/mikceroese/GPianoroll/Samples/sample_07.mid" sound-font visualizer="#Visualizer4" id="Player4">
+    </midi-player>
+</div>
+
+<p>Want to try your hand with optimization? Check our <a href="https://github.com/mikceroese/GPianoroll">GitHub repository</a> and download the code!</p>
+
+<p>Huge thanks to @cifkao for the <a href="https://github.com/cifkao/html-midi-player/">MIDI visualizer</a>.</p>
