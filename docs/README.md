@@ -23,7 +23,6 @@
 
 <p>And here are some of our volunteers' favourite pieces!</p>
 
-<div style="display:flex; display_wrap:wrap">
 <div>
     <midi-visualizer type="piano-roll" id="Visualizer1" src="sample_01.mid"></midi-visualizer>
     <midi-player src="sample_01.mid" sound-font visualizer="#Visualizer1" id="Player1">
@@ -43,7 +42,6 @@
     <midi-visualizer type="piano-roll" id="Visualizer4" src="sample_07.mid"></midi-visualizer>
     <midi-player src="sample_07.mid" sound-font visualizer="#Visualizer4" id="Player4">
     </midi-player>
-</div>
 </div>
 
 <p>Want to try your hand with optimization? Check our <a href="https://github.com/mikceroese/GPianoroll">GitHub repository</a> and download the code!</p>
