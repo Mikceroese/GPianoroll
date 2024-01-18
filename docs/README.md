@@ -6,8 +6,8 @@
 
 <p>We built our own custom version of MuseGAN, completely in PyTorch, and featuring Drums, Guitar and Bass. Here are some samples:</p>
 <div>
-<midi-visualizer type="piano-roll" id="museGANVisualizer" src="https://github.com/mikceroese/GPianoroll/samples/MuseGAN_DBG_samples.mid"></midi-visualizer>
-<midi-player src="https://github.com/mikceroese/GPianoroll/Samples/suseGAN_DBG_samples.mid" sound-font visualizer="#museGANVisualizer" id="museGANPlayer">
+<midi-visualizer type="piano-roll" id="museGANVisualizer" src="https://drive.google.com/1Hwm-Sg7MOXXTItae3fWnRRh8VcmQTE63"></midi-visualizer>
+<midi-player src="https://drive.google.com/1Hwm-Sg7MOXXTItae3fWnRRh8VcmQTE63" sound-font visualizer="#museGANVisualizer" id="museGANPlayer">
 </midi-player>
 </div>
 
