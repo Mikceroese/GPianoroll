@@ -1,6 +1,6 @@
 # GPianoroll
 
-Music is a mix or art and science: a way for humans to express themselves, but also a field with heavy maths and physics involved! A musical piece's impression depends on the physical properties of the sounds that make it, but also on the listener they reach out to. In this project, we propose an evaluation method for Deep Learning generative models that leverages human feedback as our quality measurement for music. We perform Bayesian Optimization over a low-dimensional latent space where we take samples from, map these samples to the high-dimensional latent space of the musical score generator MuseGAN, and ask the final user to evaluate how they like the output of the model. After some BO iterations, our method finds which point of the latent space is more to the subject's liking, and extracts one final sample.
+Music is a mix of art and science: a way for humans to express themselves, but also a field with heavy maths and physics involved! A musical piece's impression depends on the physical properties of the sounds that make it, but also on the listener they reach out to. In this project, we propose an evaluation method for Deep Learning generative models that leverages human feedback as our quality measurement for music. We perform Bayesian Optimization over a low-dimensional latent space where we take samples from, map these samples to the high-dimensional latent space of the musical score generator MuseGAN, and ask the final user to evaluate how they like the output of the model. After some BO iterations, our method finds which point of the latent space is more to the subject's liking, and extracts one final sample.
 
 Want to see some of our samples? Check out our [GitHub pages](https://mikceroese.github.io/GPianoroll) site
 
@@ -19,7 +19,7 @@ Our work includes the following files:
 
 In order to run the code you need to:
 - Install the necessary dependencies. For the notebook, dependencies are included in the first cell.
-  Most importantly, you must install pypianoroll, PrettyMIDI and BayesOpt locally to run the optimization.
+  Most importantly, you must install PyTorch, pypianoroll, PrettyMIDI and BayesOpt locally to run the optimization.
 - Select a trained model. You can use the provided checkpoint or train another one using the provided notebook.
   In case you decide to use the notebook, it contains instructions for generating the model and saving it.
 - Select a soundfont in order to play the MIDI files using the built in interface. There are plenty of
