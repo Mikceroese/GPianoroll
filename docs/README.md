@@ -31,8 +31,8 @@
     </midi-player>
 </div>
 <div>
-    <midi-visualizer type="piano-roll" id="Visualizer2" src="sample_06.mid"></midi-visualizer>
-    <midi-player src="sample_06.mid" sound-font visualizer="#Visualizer2" id="Player2">
+    <midi-visualizer type="piano-roll" id="Visualizer2" src="sample_02.mid"></midi-visualizer>
+    <midi-player src="sample_02.mid" sound-font visualizer="#Visualizer2" id="Player2">
     </midi-player>
 </div>
 <div>
@@ -41,8 +41,28 @@
     </midi-player>
 </div>
 <div>
-    <midi-visualizer type="piano-roll" id="Visualizer4" src="sample_07.mid"></midi-visualizer>
-    <midi-player src="sample_07.mid" sound-font visualizer="#Visualizer4" id="Player4">
+    <midi-visualizer type="piano-roll" id="Visualizer4" src="sample_04.mid"></midi-visualizer>
+    <midi-player src="sample_04.mid" sound-font visualizer="#Visualizer4" id="Player4">
+    </midi-player>
+</div>
+<div>
+    <midi-visualizer type="piano-roll" id="Visualizer5" src="sample_05.mid"></midi-visualizer>
+    <midi-player src="sample_05.mid" sound-font visualizer="#Visualizer5" id="Player5">
+    </midi-player>
+</div>
+<div>
+    <midi-visualizer type="piano-roll" id="Visualizer6" src="sample_06.mid"></midi-visualizer>
+    <midi-player src="sample_06.mid" sound-font visualizer="#Visualizer6" id="Player6">
+    </midi-player>
+</div>
+<div>
+    <midi-visualizer type="piano-roll" id="Visualizer7" src="sample_07.mid"></midi-visualizer>
+    <midi-player src="sample_07.mid" sound-font visualizer="#Visualizer7" id="Player7">
+    </midi-player>
+</div>
+<div>
+    <midi-visualizer type="piano-roll" id="Visualizer8" src="sample_08.mid"></midi-visualizer>
+    <midi-player src="sample_08.mid" sound-font visualizer="#Visualizer8" id="Player8">
     </midi-player>
 </div>
 </div>
