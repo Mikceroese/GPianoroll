@@ -1,0 +1,13 @@
+midi-visualizer svg rect.note[data-instrument="1"]{
+  fill: #2ee;
+}
+midi-visualizer svg rect.note[data-instrument="2"]{
+  fill: #e2e;
+}
+midi-visualizer svg rect.note[data-is-drum="true"]{
+  fill: #888;
+}
+#section3 midi-visualizer svg rect.note.active {
+  opacity: 0.9;
+  stroke: #000;
+}
