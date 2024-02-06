@@ -24,6 +24,27 @@
 </div>
 
 <hr />
+<p style='margin-top:10px'>After that, we start exploring the latent space. We show our volunteers a total of 64 samples. Like these!</p>
+
+<div style="display:flex; flex-wrap:wrap; align-items:flex-end">
+<div>
+    <midi-visualizer type="piano-roll" id="Visualizer1r" src="sample_rand1.mid"></midi-visualizer>
+    <midi-player src="sample_rand1.mid" sound-font visualizer="#Visualizer1r" id="Player1r">
+    </midi-player>
+</div>
+<div>
+    <midi-visualizer type="piano-roll" id="Visualizer2r" src="sample_rand2.mid"></midi-visualizer>
+    <midi-player src="sample_rand2.mid" sound-font visualizer="#Visualizer2r" id="Player2r">
+    </midi-player>
+</div>
+<div>
+    <midi-visualizer type="piano-roll" id="Visualizer3r" src="sample_rand3.mid"></midi-visualizer>
+    <midi-player src="sample_rand3.mid" sound-font visualizer="#Visualizer3r" id="Player3r">
+    </midi-player>
+</div>
+</div>
+
+<hr />
 <p style='margin-top:10px'>And here are some of our volunteers' favourite pieces!</p>
 
 <div style="display:flex; flex-wrap:wrap; align-items:flex-end">
