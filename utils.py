@@ -37,7 +37,7 @@ def load_checkpoint(load_path, model, optimizer = None, gpu_device='cuda:0'):
     else:
         device = torch.device('cpu')
 
-    cp = torch.load(load_path, map_location=device)
+    cp = torch.load(load_path, map_location=device, weights_only=True)
     model.load_state_dict(cp['model_state_dict'])
     if optimizer is not None:
         optimizer.load_state_dict(cp['optimizer_state_dict'])

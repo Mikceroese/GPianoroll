@@ -44,6 +44,8 @@ wd = getcwd() # Working directory
 cp_path_gen = join(wd,'museGANgen_DBG_chroma_256_25k.pt') # Path to the generator checkpoint
 gen = Generator()
 load_checkpoint(cp_path_gen,gen)
+if torch.cuda.is_available():
+    gen = gen.cuda()
 gen.eval()
 
 # -.-*-.-*-.-*-.-*-.-*-.-*-.-*-.-*-.-*-.-*-.-*- #
@@ -181,7 +183,10 @@ class BayesOptMuseGANgui(BayesOptContinuous):
 
         q = self.uniform_to_normal(query)
         q = self.remap_query(q)
-        sample = gen(np_to_tensor(q))
+        q = np_to_tensor(q)
+        if torch.cuda.is_available():
+            q = q.cuda()
+        sample = gen(q)
         sample = clip_samples(sample,note_thresholds)
         return sample
 

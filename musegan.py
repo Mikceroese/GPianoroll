@@ -31,7 +31,7 @@ n_beats_per_measure = 4
 measure_resolution = 4 * beat_resolution
 tempo_array = np.full((n_measures * n_beats_per_measure * beat_resolution, 1), tempo)
 
-latent_dim = 128
+latent_dim = 256
 
 # -.-*-.-*-.-*-.-*-.-*-.-*-.-*-.-*-.-*-.-*-.-*- #
 
