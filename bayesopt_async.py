@@ -21,8 +21,8 @@ import numpy as np
 
 class BayesOptAsynchronous(BayesOptContinuous):
 
-    # We require an auxiliar thread for optimizing,
-    # a response event to notify when result has been given,
+    # We require an auxiliar thread for optimizing without blocking,
+    # a response event to notify when a result has been given,
     # and a variable for said result.
 
     def __init__(self,n):
@@ -69,7 +69,6 @@ if __name__ == "__main__":
     params = {}
     params['n_init_samples'] = 2
     params['n_iterations'] = 2
-    params['init_method'] = 2 # Sobol
 
     n = 2
     lb = np.zeros((n,)) # Lower bounds
@@ -91,5 +90,3 @@ if __name__ == "__main__":
 
     print("Done")
     
-
-
