@@ -108,7 +108,7 @@ class BayesOptDict():
 
     def set_score(self,idx,score):
 
-        mY[idx] = score
+        self.mY[idx] = score
 
     def set_init_samples(self,n_init_samples):
 

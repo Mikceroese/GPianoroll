@@ -46,6 +46,7 @@ class BayesOptAsynchronous(BayesOptContinuous):
         self.mvalue = None
         self.x_out = None
         self.error = False
+        self.final_result_ready = Event()
 
         # Background thread, for non-blocking execution
         self.opt_thread = Thread(group=None,target=self.targetFunction)
@@ -97,13 +98,17 @@ class BayesOptAsynchronous(BayesOptContinuous):
         self.wait_for_result()
         # The optimization thread is blocked here until 
         # 'set_result' is called.
+        
         self.result_ready.clear()
+
         self.it_semaphore.acquire()
         self.remaining_iterations -= 1
         if self.remaining_iterations == 0:
             self.opt_done.set()
         self.it_semaphore.release()
+
         self.eval_done.set()
+
         return self.result
     
     # Call this to ensure the number of remaining iterations and 
@@ -112,12 +117,13 @@ class BayesOptAsynchronous(BayesOptContinuous):
     def wait_for_eval(self):
         self.eval_done.wait()
         self.eval_done.clear()
-        return self.opt_done.is_set()
+        return self.has_finished()
     
     # Proxy function for the optimization thread
     # (Threads can't return values, but values stored inside are saved)
     def targetFunction(self):
         self.mvalue, self.x_out, self.error = super().optimize()
+        self.final_result_ready.set()
     
     # Starts the optimization thread (only once)
     def optimize(self):
@@ -147,6 +153,7 @@ class BayesOptAsynchronous(BayesOptContinuous):
     
     # Return a dictionary with the result variables
     def get_results(self):
+        self.final_result_ready.wait()
         return {'mvalue':self.mvalue, 
                 'x_out':self.x_out, 
                 'error':self.error}

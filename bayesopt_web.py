@@ -53,8 +53,9 @@ class BayesOptWeb(BayesOptAsynchronous):
         with bo_app.app_context():
             super().targetFunction()
 
-    # Numpy arrays are not json resializable
+    # Numpy arrays are not json serializable
     def get_results(self):
+        self.final_result_ready.wait()
         return {'mvalue':self.mvalue, 
                 'x_out':self.x_out.tolist(), 
                 'error':self.error}
@@ -65,7 +66,7 @@ class BayesOptWebPool():
     # simultaneous BayesOpt experiments with potentially different
     # problem dimensions and HTML templates. So far it only supports
     # BayesOptWeb instances, so any special features should be
-    # implemented on the front end.
+    # implemented on the front end or in subclasses.
 
     # DISCLAIMER: This class assumes polite behavior from users 
     # (i.e. no unfinished experiments) and has only basic security and 
@@ -87,11 +88,9 @@ class BayesOptWebPool():
         self.id_semaphore.acquire()
         if len(self.pool) < self.max_exp:
             if id is None:
-                id = str(self.next_id) + \
-                     datetime.now().strftime("%m-%d-%Y_%H:%M:%S")
-            else:
-                id = str(self.next_id) + str(id) + \
-                     datetime.now().strftime("%m-%d-%Y_%H:%M:%S")
+                id = ""
+            id = datetime.now().strftime("%Y-%m-%d_%H:%M:%S") + "_" + \
+                    str(self.next_id) + str(id)
             self.next_id += 1
             self.pool[id] = BayesOptWeb(n,template)
             self.id_semaphore.release()

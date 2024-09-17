@@ -8,10 +8,8 @@
 from os import remove
 import numpy as np
 import torch
-import pypianoroll
-from pretty_midi import PrettyMIDI
-import scipy.io.wavfile
-from pypianoroll import Multitrack, Track, BinaryTrack
+from pypianoroll import load as pianoload
+from pypianoroll import Multitrack, Track
 
 # -.-*-.-*-.-*-.-*-.-*-.-*-.-*-.-*-.-*-.-*-.-*- #
 
@@ -31,7 +29,7 @@ n_beats_per_measure = 4
 measure_resolution = 4 * beat_resolution
 tempo_array = np.full((n_measures * n_beats_per_measure * beat_resolution, 1), tempo)
 
-latent_dim = 128
+latent_dim = 256
 
 # -.-*-.-*-.-*-.-*-.-*-.-*-.-*-.-*-.-*-.-*-.-*- #
 
@@ -294,22 +292,18 @@ def samples_to_multitrack(samples):
 
   return m
 
-def write_sample(m, sf2_path, file_name = "sample"):
+def write_sample(m, file_name = "sample"):
     """
-    Save the Multitrack object m as midi and wav
+    Save the Multitrack object m as midi
     """
 
     npz_name = file_name+".npz"
     midi_name = file_name+".mid"
-    wav_name = file_name+".wav"
 
     m.save(npz_name)
-    m = pypianoroll.load(npz_name)
-    remove(npz_name)
+    m = pianoload(npz_name)
     m.write(midi_name)
-    music = PrettyMIDI(midi_file=midi_name)
-    waveform = music.fluidsynth(sf2_path=sf2_path,fs=44100.0) # fluidsynth needs the sample frequency as a float,
-    scipy.io.wavfile.write(wav_name,44100,waveform) # but scipy needs an integer. Care.
+    remove(npz_name)
 
 
 # -.-*-.-*-.-*-.-*-.-*-.-*-.-*-.-*-.-*-.-*-.-*- #
