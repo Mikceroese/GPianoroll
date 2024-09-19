@@ -22,7 +22,7 @@
 
         /* Main content area where images/plots will be displayed */
         .main-area {
-            flex: 4;
+            flex: 3;
             background-color: rgba(0, 128, 128, 0.6); /* Teal with 60% transparency */
             padding: 20px;
             display: flex;
@@ -44,9 +44,19 @@
             font-size: 1.5em;
         }
 
+        /* Display area below the title */
+        .display-area {
+            width: 100%;
+            text-align: center;
+            margin-bottom: 10px;
+            padding-bottom: 10px;
+            color: white;
+            font-size: 1.5em;
+        }
+
         /* Sidebar for the slider and textbox */
         .sidebar {
-            flex: 1;
+            flex: 2;
             background-color: rgba(0, 128, 128, 0.6); /* Teal with 60% transparency */
             padding: 20px;
             display: flex;
@@ -69,13 +79,6 @@
         /* Hide the contents when sidebar is collapsed */
         .sidebar-hidden form {
             display: none;
-        }
-
-        /* Vertical Slider Input */
-        input[type="range"] {
-            height: 400px; /* Increase slider height */
-            width: 80%; /* Adjust text input width */
-            transform: rotate(-90deg); /* Vertical slider */
         }
 
         /* Textbox Input */
@@ -140,8 +143,8 @@
                 <h1>Here's your song. Rate it:</h1>
             </div>
             <!-- Image/Plot -->
-            <midi-visualizer type="piano-roll" id="museGANVisualizer" src="{{mid}}"></midi-visualizer>
-            <midi-player src="{{mid}}" sound-font visualizer="#museGANVisualizer" id="museGANPlayer">
+            <midi-visualizer type="piano-roll" id="museGANVisualizer" src="/static/MuseGAN_DBG_samples.mid"></midi-visualizer>
+            <midi-player src="/static/MuseGAN_DBG_samples.mid" sound-font visualizer="#museGANVisualizer" id="museGANPlayer">
             </midi-player>            
             <!-- Toggle Sidebar Button -->
             <button class="toggle-sidebar" id="toggle-sidebar-btn">Score Sidebar</button>
@@ -150,27 +153,19 @@
         <!-- Sidebar for Slider and Textbox Input -->
         <div class="sidebar" id="sidebar">
             <form id="score-form" action="/input_result" method="POST">
-                <label for="score">Rate the composition:</label>
-                <!-- Vertical Slider Input -->
-                <input type="range" id="score-slider" name="score" min="0" max="100" value="50">
+                <label for="score">Please, input a name:</label>
                 <!-- Textbox Input -->
-                <input type="text" id="score-textbox" value="50">
+                <input type="text" id="score-textbox" value="name">
                 <!-- Submit Button -->
-                <button type="submit">Submit Score</button>
+                <button type="submit">Submit</button>
             </form>
         </div>
     </div>
 
     <script>
-        const slider = document.getElementById('score-slider');
         const textbox = document.getElementById('score-textbox');
         const sidebar = document.getElementById('sidebar');
         const toggleBtn = document.getElementById('toggle-sidebar-btn');
-
-        // Synchronize slider and textbox values
-        slider.addEventListener('input', function() {
-            textbox.value = slider.value;
-        });
 
         textbox.addEventListener('input', function() {
             // Allow only numbers

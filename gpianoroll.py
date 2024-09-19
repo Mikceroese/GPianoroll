@@ -28,13 +28,8 @@ from bayesoptmodule import BayesOptContinuous
 
 from musegan import Generator # The model is defined here
 from musegan import clip_samples, samples_to_multitrack, write_sample
-from pianoroll_gui import *
 
 from utils import *
-
-# Python3 compat
-if hasattr(__builtins__, 'raw_input'):
-    input = raw_input
 
 # -.-*-.-*-.-*-.-*-.-*-.-*-.-*-.-*-.-*-.-*-.-*- #
 
@@ -94,7 +89,7 @@ mid_name = mid_sample_name+'.wav'
 
 # Problem definition
 
-class BayesOptMuseGANgui(BayesOptContinuous):
+class BayesOptMuseGAN(BayesOptContinuous):
 
     def __init__(self, n, mat_A):
 
@@ -118,9 +113,6 @@ class BayesOptMuseGANgui(BayesOptContinuous):
         self.vars = np.sum(np.square(mat_A),axis=0)
         self.stds = np.sqrt(self.vars)
 
-        # Initialize GUI
-        self.gui = PianorollGUI(wav_name, use_ref=True, ref_path=mid_name)
-
         # Show two random generations so the user knows what to expect
         with torch.no_grad():
             sample_one = self.generate_sample(np.random.uniform(size=n))
@@ -129,10 +121,6 @@ class BayesOptMuseGANgui(BayesOptContinuous):
             write_sample(m_one,sf2_path,sample_name)
             m_two = samples_to_multitrack(tensor_to_np(sample_two))
             write_sample(m_two,sf2_path,mid_sample_name)
-            self.gui.show_current_sample(m_one)
-            self.gui.show_target_sample(m_two)
-        
-        self.gui.wait_for_input()
 
         mid_query = np.zeros(n)
         mid_query[np.arange(0,n,2)] = 1 - 1e-6
@@ -193,16 +181,11 @@ class BayesOptMuseGANgui(BayesOptContinuous):
         m = samples_to_multitrack(tensor_to_np(sample))
         write_sample(m,sf2_path,sample_name)
 
-        self.gui.show_current_sample(m)
-        self.gui.update_sample_text(self.current_iter)
-
-        score = self.gui.wait_for_input()
+        #Wait for score
 
         if self.best_score <= score:
             self.best_score = score
             write_sample(m,sf2_path,mid_sample_name)
-            self.gui.show_target_sample(m)
-            self.gui.update_ref_text(self.current_iter,score)
             self.best_iter = self.current_iter
 
         self.current_iter+=1
