@@ -1,16 +1,6 @@
 ##################################################
-# This file contains the BayesOptWeb             #
-# subclass for the BayesOpt module, as well as a #
-# pool manager for concurrency in web apps.      #
-#                                                #
-# The objective of this class is to provide a    #
-# web interface that uses the BayesOptAsync      #
-# subclass capabilities and the Flask library    #
-# to render a view of an objective function      #
-# evaluation and an input for the given result   #
-# in a web browser.                              #
-#                                                #
-# A toy example is provided as the main program  #
+# A specific version of BayesOptWeb to create    #
+# sustain and render GPianoroll instances        #
 #                                                #
 # Author: Miguel Marcos (m.marcos@unizar.es)     #
 ##################################################
@@ -21,7 +11,7 @@ import math
 from flask import Flask, redirect, url_for, request, session, render_template, send_from_directory
 from datetime import datetime
 from os.path import join
-from os import getcwd
+from os import getcwd, remove
 
 from bayesopt_web import BayesOptWeb, BayesOptWebPool
 from bayesoptmodule import BayesOptContinuous
@@ -46,7 +36,7 @@ class GPianorollWeb(BayesOptWeb):
         super().__init__(self.n,'gpianoroll_query.html')
 
         params = {}
-        params['n_init_samples'] = 21
+        params['n_init_samples'] = 1
         params['init_method'] = 2 # Sobol
         params['noise'] = 1e-2 # Default 1e-6
         params['n_iterations'] = 0
@@ -67,6 +57,8 @@ class GPianorollWeb(BayesOptWeb):
         self.name = 'GPianoroll_'+name
         self.sample_name = 'samples/'+self.name
         self.sample_url = '/samples/'+self.name+'.mid'
+        self.best_sample_name = 'samples/'+self.name+'_best'
+        self.best_sample_url = '/samples/'+self.name+'_best.mid'
 
         self.true_n = 256 # True dimension of the model's input
         self.mat_A = np.random.randn(self.n,self.true_n)
@@ -169,38 +161,46 @@ class GPianorollWeb(BayesOptWeb):
             self.opt_done.clear() 
 
             self.it_semaphore.acquire()
-            self.remaining_iterations = 42
+            self.remaining_iterations = 2*self.params['n_init_samples']
             self.it_semaphore.release()
            
             # At this point we have scores for the 21 initial samples
             # plus the middle one.
 
             bo_dict = BayesOptDict(self.params['save_filename'])
-            for i in range(21):
+            for i in range(self.params['n_init_samples']):
                 mid_sample = np.round(np.random.uniform(size=self.n),3)
                 mid_sample[np.arange(0,self.n,2)] = 1 - 1e-6
                 bo_dict.add_sample(mid_sample,self.mid_score)
 
-            bo_dict.set_init_samples(self.params['n_init_samples']+21)
-            bo_dict.set_num_iter(self.params['n_init_samples']+21)
+            bo_dict.set_init_samples(self.params['n_init_samples'])
+            bo_dict.set_num_iter(self.params['n_init_samples']*2)
             bo_dict.save_txt(self.params['save_filename'])
 
             # We include 21 points mapped to the center of the latent
             # space during Box-Muller. The user has only graded 22
             # samples, but we have scores for 42.
 
-            self.params['n_init_samples'] += 21
-            self.params['n_iterations'] = 3
+            self.params['n_init_samples'] *= 2
+            self.params['n_iterations'] = self.params['n_init_samples']
             self.params['load_save_flag'] = 3 # 3 - Load and save
             self.params['load_filename'] = self.params['save_filename']
 
             self.mvalue, self.x_out, self.error = BayesOptContinuous.optimize(self)
             # With 42 iterations, the user will have graded 64 songs
+
+            sample = tensor_to_np(self.generate_sample(self.x_out))
+            write_sample(samples_to_multitrack(sample),self.best_sample_name)
+            remove(self.sample_name+".mid")           
+
             self.final_result_ready.set()
 
     def has_finished(self):
         opt_started = self.params['n_iterations'] > 0
         return self.opt_done.is_set() and opt_started
+    
+    def get_best_sample_url(self):
+        return self.best_sample_url
 
 class GPianorollWebPool(BayesOptWebPool):
 
@@ -213,10 +213,10 @@ class GPianorollWebPool(BayesOptWebPool):
         self.id_semaphore.acquire()
         if len(self.pool) < self.max_exp:
             if id is None:
-                id = str(self.next_id) + \
+                id = str(self.next_id) + "_" + \
                      datetime.now().strftime("%m-%d-%Y_%H:%M:%S")
             else:
-                id = str(self.next_id) + str(id) + \
+                id = str(self.next_id) + "_" + str(id) + "_" + \
                      datetime.now().strftime("%m-%d-%Y_%H:%M:%S")
             self.next_id += 1
             self.pool[id] = GPianorollWeb(id)
@@ -225,6 +225,17 @@ class GPianorollWebPool(BayesOptWebPool):
         else:
             self.id_semaphore.release()
             return -1, True
+
+    def remove_exp(self, id):
+        ret = (id in self.pool) and (self.pool[id].has_finished() or
+                                     not self.pool[id].has_started())
+        results = None
+        url = None
+        if ret:
+            url = self.pool[id].get_best_sample_url()
+            results = self.pool[id].get_results()
+            self.pool.pop(id)
+        return results, url, ret
 
 # -.-*-.-*-.-*-.-*-.-*-.-*-.-*-.-*-.-*-.-*-.-*-.-*-.-*-.-*-.-*-.-*-
 
@@ -242,7 +253,7 @@ gen.eval()
 
 @bo_app.route('/')
 def index():
-   return render_template('basic_bo_index.html')
+   return render_template('gpianoroll_index.html')
 
 @bo_app.route('/start', methods = ['GET', 'POST'])
 def start_exp():
@@ -291,10 +302,13 @@ def query_input():
         bo_web_pool.set_exp_query_result(bo_id,q_result)
         finished = bo_web_pool.wait_for_exp_eval(bo_id)
         if not finished:
+            print("OOOOOOO")
             return redirect(url_for('query'))
         else:
-            bo_result, ret = bo_web_pool.remove_exp(bo_id)
+            print("UUUUUUUUU")
+            bo_result, mid_url, ret = bo_web_pool.remove_exp(bo_id)
             session['bo_result'] = bo_result
+            session['bo_mid_url'] = mid_url
             return redirect(url_for('end_exp'))
     
 
@@ -304,15 +318,14 @@ def end_exp():
         redirect(url_for('index'))
     else:
 
-        global bo_web_pool
-
-        bo_result = session['bo_result']
-        return render_template('basic_bo_result.html',res=bo_result)
+        mid_url = session['bo_mid_url']
+        return render_template('gpianoroll_result.html',mid=mid_url)
     
 @bo_app.route('/logout',methods=['GET','POST'])
 def logout():
     session.pop('bo_id')
     session.pop('bo_result')
+    session.pop('bo_mid_url')
     return redirect(url_for('index'))
 
 if __name__ == '__main__':

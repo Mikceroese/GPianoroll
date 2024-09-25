@@ -10,180 +10,366 @@
             margin: 0;
             padding: 0;
             display: flex;
-            height: 100vh;
-        }
-
-        /* Main container for both content and sidebar */
-        .container {
-            display: flex;
-            flex: 1;
-            margin: 20px;
-        }
-
-        /* Main content area where images/plots will be displayed */
-        .main-area {
-            flex: 3;
-            background-color: rgba(0, 128, 128, 0.6); /* Teal with 60% transparency */
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
             justify-content: center;
             align-items: center;
-            border-radius: 15px;
+            height: 100vh;
+            background-color: #f0f0f0; /* Light background for contrast */
             position: relative;
-            margin-right: 20px; /* Added margin between main area and sidebar */
         }
 
-        /* Title area at the top of the main area */
-        .title-area {
+        /* Main container */
+        .main-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: rgba(0, 128, 128, 0.6); /* Teal with transparency */
+            border-radius: 15px;
+            padding: 40px;
+            width: 90vw; /* Cover 90% of the viewport width */
+            height: 90vh; /* Cover 90% of the viewport height */
+            /*max-width: 1200px; /* Optional: Limit max width */
+            /*max-height: 800px; /* Optional: Limit max height */
+        }
+
+        .container {
+            display: flex;
+            flex: 3;
+            justify-content: center;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* Logo area */
+        .logo {
             width: 100%;
             text-align: center;
-            margin-bottom: 10px;
-            padding-bottom: 10px;
-            color: white;
-            font-size: 1.5em;
+            margin-bottom: 40px;
         }
 
-        /* Display area below the title */
-        .display-area {
-            width: 100%;
-            text-align: center;
-            margin-bottom: 10px;
-            padding-bottom: 10px;
-            color: white;
-            font-size: 1.5em;
+        /* Placeholder logo image */
+        .logo img {
+            max-width: 40vw; /* Adjusted size for larger screens */
+            height: auto;
         }
 
-        /* Sidebar for the slider and textbox */
-        .sidebar {
-            flex: 2;
-            background-color: rgba(0, 128, 128, 0.6); /* Teal with 60% transparency */
-            padding: 20px;
+        /* Form area */
+        .form-area {
             display: flex;
             flex-direction: column;
-            justify-content: space-between;
-            align-items: center;
-            border-radius: 15px;
-            transition: all 0.5s ease;
-            max-width: 300px;
+            align-items: center; /* Centers the form elements */
+            width: 100%;
         }
 
-        /* Sidebar hidden state */
-        .sidebar-hidden {
-            max-width: 0;
-            padding: 0;
-            overflow: hidden;
-            transition: all 0.5s ease;
+        form {
+            display: flex;
+            flex-direction: column;
+            align-items: center; /* Centers the form elements */
+            width: 60%;
         }
 
-        /* Hide the contents when sidebar is collapsed */
-        .sidebar-hidden form {
-            display: none;
-        }
-
-        /* Textbox Input */
+        /* Input styling */
         input[type="text"] {
-            width: 80%; /* Adjust text input width */
-        }
-
-        /* Form elements styling */
-        label {
-            color: white;
+            width: 60%; /* Reduced width to fit within larger container */
+            padding: 10px;
             font-size: 1.2em;
-            margin-bottom: 10px;
+            margin-bottom: 20px;
+            border: none;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            text-align: center; /* Centers the text inside the input */
         }
 
         /* Submit button styling */
         button {
             padding: 10px 20px;
+            font-size: 1.2em;
             background-color: #4CAF50;
             color: white;
             border: none;
+            border-radius: 5px;
             cursor: pointer;
-            margin-top: 10px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
         }
 
         button:hover {
             background-color: #45a049;
         }
 
-        /* Show/Hide Sidebar button */
-        .toggle-sidebar {
+        .bubble-button {
+            padding: 5px 10px;
+            margin: 5px;
+            font-size: 1.1em;
+        }
+
+        /* Mascot container */
+        .mascot-container {
+            flex: 2;
+            top: 5%; /* Add some margin from the top */
+            left: 5%; /* Add some margin from the left */
+            display: flex;
+            align-items: center;
+            height: 90vh; /* Full height of the screen */
+            justify-content: center; /* Center vertically within its area */
+            margin-top: 0; /* Ensure no extra margin interferes with centering */
+            z-index: 9; /* Ensures the bubble is on top of the container */
+        }
+
+
+        /* Mascot image */
+        .mascot {
+            height: 90vh; /* Full height of the screen */
+            width: auto;
+            margin-bottom: 10px;
+        }
+
+        /* Speech bubble styling */
+        .speech-bubble {
+            position: relative;
+            top: -20%;
+            transform: translateY(-50%); /* Center vertically */
+            background-color: rgba(255, 255, 255, 0.9);
+            border-radius: 20px;
+            padding: 10px;
+            max-width: 20vw;
+            text-align: center;
+            font-size: 1em;
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+            z-index: 10; /* Ensures the bubble is on top of the container */
+            margin-left: 20px; /* Increased margin for more space */
+        }
+
+        /* Arrow for the speech bubble */
+        .speech-bubble::after {
+            content: '';
             position: absolute;
-            bottom: 20px;
-            right: 20px; /* Button placed in the bottom-right corner */
-            padding: 10px 20px;
-            background-color: teal;
-            color: white;
-            border: none;
-            cursor: pointer;
+            top: 50%;
+            left: -15px; /* Move arrow to the left of the speech bubble */
+            margin-top: -10px; /* Adjust positioning */
+            border-width: 10px;
+            border-style: solid;
+            border-color: transparent rgba(255, 255, 255, 0.9) transparent transparent; /* Change to match the bubble */
         }
 
-        .toggle-sidebar:hover {
-            background-color: #008080;
-        }
-
-        img {
-            width: 100%;
-            max-width: 500px;
-            height: auto;
-            border-radius: 10px;
+        /* Overlay styling */
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(128, 128, 128, 0.5); /* Gray overlay */
+            z-index: 5; /* Behind the speech bubble */
+            display: none; /* Initially hidden */
         }
 
     </style>
-    <script src="https://cdn.jsdelivr.net/combine/npm/tone@14.7.58,npm/@magenta/music@1.23.1/es6/core.js,npm/focus-visible@5,npm/html-midi-player@1.4.0"></script>
 </head>
 <body>
 
-    <div class="container">
-        <!-- Main Area for Image/Plot Display -->
-        <div class="main-area" id="main-area">
-            <!-- Title Area -->
-            <div class="title-area">
-                <h1>Here's your song. Rate it:</h1>
+    <div class="main-container">
+
+        <!-- Mascot and Speech Bubble -->
+        <div class="mascot-container">
+            <div class="container">
+                <img src="/static/Bastien.png" alt="Mascot" class="mascot">
+                <button id="tour-button">Show me around</button>
             </div>
-            <!-- Image/Plot -->
-            <midi-visualizer type="piano-roll" id="museGANVisualizer" src="/static/MuseGAN_DBG_samples.mid"></midi-visualizer>
-            <midi-player src="/static/MuseGAN_DBG_samples.mid" sound-font visualizer="#museGANVisualizer" id="museGANPlayer">
-            </midi-player>            
-            <!-- Toggle Sidebar Button -->
-            <button class="toggle-sidebar" id="toggle-sidebar-btn">Score Sidebar</button>
+            <div class="speech-bubble" id="speech-bubble">
+                <p>Welcome to GPianoroll! Enter your username to start.</p>
+                <p>First time? Click the button below.</p>
+            </div>
         </div>
 
-        <!-- Sidebar for Slider and Textbox Input -->
-        <div class="sidebar" id="sidebar">
-            <form id="score-form" action="/input_result" method="POST">
-                <label for="score">Please, input a name:</label>
-                <!-- Textbox Input -->
-                <input type="text" id="score-textbox" value="name">
-                <!-- Submit Button -->
-                <button type="submit">Submit</button>
-            </form>
+        <div class="container">
+            <!-- Logo Area -->
+            <div class="logo">
+                <img src="/static/Logo_GPianoroll.png" alt="Logo">
+            </div>
+
+            <!-- Form Area -->
+            <div class="form-area">
+                <form action="/start" method="POST">
+                    <input type="text" name="name" placeholder="Enter a username for your session" required>
+                    <button type="submit">Start</button>
+                </form>
+            </div>
         </div>
+
     </div>
 
+    <div class="overlay" id="overlay"></div>
+
     <script>
-        const textbox = document.getElementById('score-textbox');
-        const sidebar = document.getElementById('sidebar');
-        const toggleBtn = document.getElementById('toggle-sidebar-btn');
 
-        textbox.addEventListener('input', function() {
-            // Allow only numbers
-            let value = textbox.value.replace(/[^0-9]/g, '');
-            textbox.value = value;
+        const tourButton = document.getElementById('tour-button');
+        const overlay = document.getElementById('overlay');
+        const speechBubble = document.getElementById('speech-bubble');
 
-            // Clip the value between 0 and 100
-            if (value !== '') {
-                value = Math.max(0, Math.min(100, value));
-                textbox.value = value;
-                slider.value = value; // Sync the slider with the clipped value
+        // Multi-step dialogues for each option
+        const dialogues = {
+            option1: [ /*What is GPianoroll?*/
+                "GPianoroll is an interface for creating music using Gaussian Processes (GP) and Bayesian Optimization (BO).",
+                "Long story short, it allows you to generate short music sequences with AI assistance.",
+                "Technology and music all together! Isn't it fun?"
+            ],
+            option1_1:[ /*Isn't AI art like... evil?*/
+                "Sometimes, depending on who you ask and the specific case...",
+                "The two main points against AI going artistic are content theft and job intrusism. Fair points, but not GPianoroll's case.",
+                "Our AI was trained using public domain music made into MIDI, which can be accessed for free and with no copyrights infringed.",
+                "And this app's goal isn't to make an 'AI composer', but to test BO on something as abstract as human taste.",
+                "\"Sure, it can make a machine play chess and go at Greatmaster level, but can it *JAM*?\"",
+                "Besides, our jingles just last for 10 seconds, so, honestly, we are no threat to artists.",
+                "In fact, all my dialogues and my character design are human-created! We support art!"
+            ],
+            option2: [ /*How does GPianoroll work?*/
+                "First, you enter a username. It can be any name, really. We will just use it, with the date and time, to identify the songs you generate.",
+                "Once you enter, we ask a Deep Learning model to generate a 10 second song, and then you can listen to it.",
+                "Then you need to grade it, the program learns which pieces you like and which you don't, and progressively becomes better at making the ones you *do* like.",
+                "It takes about 30 mins, on average, but  in an uncontroled environment like the Internet, it can be faster or slower.",
+                "I can tell you more about it once we begin an experiment."
+            ],
+            option3: [ /*... BAstIEn?*/
+                "It stands for 'Bayesian Application assiSTant for Interface ENgagement'!",
+                "It basically means I'm a cute face to put in front of the app, so it is more appealing!",
+                "That way, more users can contribute to making science!",
+                "Also I'll be the one in charge of answering your questions, if you have any."
+            ]
+        };
+
+        let dialogueStep = 0;
+        let currentOption = null;
+        let dialogue_on = false;
+
+        // Function to unset the overlay
+        function resetBubble() {
+            speechBubble.innerHTML = `
+                <p>Welcome to GPianoroll! Enter your username to start.</p>
+                <p>First time? Click the button below.</p>
+            `;
+            tourButton.removeEventListener('click',resetBubble)
+            tourButton.addEventListener('click',setBubble)
+            tourButton.textContent = 'Show me around!'
+        }
+
+        // Function to reset the dialogue and buttons
+        function setBubble() {
+            speechBubble.innerHTML = `
+                <p>Hi! I'm BAstIEn! Can I answer any of your questions?</p>
+                <div class="bubble-buttons" id="bubble-buttons">
+                    <button class="bubble-button" id="option1">What is GPianoroll?</button>
+                    <button class="bubble-button" id="option2">How does this app work?</button>
+                    <button class="bubble-button" id="option3">... BAstIEn?</button>
+                </div>
+            `;
+            assignButtonListeners();
+            tourButton.removeEventListener('click',setBubble)
+            tourButton.addEventListener('click',resetBubble)
+            dialogueStep = 0;
+            currentOption = null;
+            tourButton.textContent = 'OK, thanks'
+        }
+
+        // Function to show the next dialogue step
+        function showNextDialogue() {
+            if (currentOption && dialogueStep < dialogues[currentOption].length) {
+                speechBubble.innerHTML = `
+                    <p>${dialogues[currentOption][dialogueStep]}</p>
+                    <div class="bubble-buttons" id="bubble-buttons">
+                        <button class="bubble-button" id="next">Next</button>
+                    </div>
+                `;
+
+                if (dialogueStep == dialogues[currentOption].length-1) {
+                    showOtherDialogues();
+                    document.getElementById('next').textContent='OK'
+                } 
+
+                document.getElementById('next').addEventListener('click', () => {
+                    dialogueStep++;
+                    if (dialogueStep < dialogues[currentOption].length) {
+                        showNextDialogue();
+                    } else {
+                        setBubble();
+                    }
+                });
             }
-        });
+        }
 
-        // Toggle the sidebar visibility with a sliding animation
-        toggleBtn.addEventListener('click', function() {
-            sidebar.classList.toggle('sidebar-hidden');
-        });
+        function showOtherDialogues() {
+            let bubble_buttons=document.getElementById('bubble-buttons');
+
+            if (currentOption=='option1'){
+                bubble_buttons.innerHTML += `
+                    <button class="bubble-button" id="option1_1">Isn't AI art like... evil?</button>
+                    <button class="bubble-button" id="option2">How does this app work?</button>
+                `
+                assignButtonListeners()
+            } else if (currentOption=='option1_1'){
+                bubble_buttons.innerHTML += `
+                    <button class="bubble-button" id="option2">How does this app work?</button>
+                `
+                assignButtonListeners()
+            }
+        }
+
+        // Assign button listeners to trigger dialogues
+        function assignButtonListeners() {
+
+            let option1 = document.getElementById('option1');
+            let option1_1 = document.getElementById('option1_1');
+            let option2 = document.getElementById('option2');
+            let option3 = document.getElementById('option3');
+
+            if (option1){
+                option1.addEventListener('click', () => {
+                    currentOption = 'option1';
+                    dialogueStep = 0;
+                    showNextDialogue();
+                });
+            }
+
+
+            if (option1_1){
+                option1_1.addEventListener('click', () => {
+                    currentOption = 'option1_1';
+                    dialogueStep = 0;
+                    showNextDialogue();
+                });
+            }
+
+            if (option2){
+                option2.addEventListener('click', () => {
+                    currentOption = 'option2';
+                    dialogueStep = 0;
+                    showNextDialogue();
+                });
+            }
+
+            if (option3){
+                option3.addEventListener('click', () => {
+                    currentOption = 'option3';
+                    dialogueStep = 0;
+                    showNextDialogue();
+                });
+            }
+
+
+        }
+
+        function dialogue_onoff() {
+
+            if (dialogue_on) {
+                dialogue_on = false;
+                resetBubble();
+            } else {
+                dialogue_on = true;
+                setBubble();
+            }
+
+        }
+
+        resetBubble()
+
     </script>
 
 </body>

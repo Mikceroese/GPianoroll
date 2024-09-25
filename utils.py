@@ -26,7 +26,7 @@ def save_checkpoint(save_path, model, optimizer, epoch=0, loss=0.0):
         'loss': loss
     }, save_path)
 
-def load_checkpoint(load_path, model, optimizer = None, gpu_device='cuda:0'):
+def load_checkpoint(load_path, model, optimizer = None, gpu_device='cuda:0', weights_only = True):
     """
     Given a model, an (optional) optimizer and the path
     to load the checkpoint from, return them initialized.
@@ -37,14 +37,18 @@ def load_checkpoint(load_path, model, optimizer = None, gpu_device='cuda:0'):
     else:
         device = torch.device('cpu')
 
-    cp = torch.load(load_path, map_location=device)
+    cp = torch.load(load_path, map_location=device, weights_only=weights_only)
     model.load_state_dict(cp['model_state_dict'])
-    if optimizer is not None:
-        optimizer.load_state_dict(cp['optimizer_state_dict'])
-    loss = cp['loss']
-    epoch = cp['epoch']
+    if not weights_only:
+        if optimizer is not None:
+            optimizer.load_state_dict(cp['optimizer_state_dict'])
+        loss = cp['loss']
+        epoch = cp['epoch']
 
-    return device, epoch, loss
+        return device, epoch, loss
+    else:
+        return device
+
 
 def tensor_to_np(x):
 

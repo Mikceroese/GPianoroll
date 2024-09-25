@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GPianoroll</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f0f0f0; /* Light background for contrast */
+            position: relative;
+        }
+
+        /* Main container */
+        .main-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: rgba(0, 128, 128, 0.6); /* Teal with transparency */
+            border-radius: 15px;
+            padding: 40px;
+            width: 90vw; /* Cover 90% of the viewport width */
+            height: 90vh; /* Cover 90% of the viewport height */
+            /*max-width: 1200px; /* Optional: Limit max width */
+            /*max-height: 800px; /* Optional: Limit max height */
+        }
+
+        .container {
+            display: flex;
+            flex: 3;
+            justify-content: center;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* Logo area */
+        .logo {
+            width: 100%;
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        /* Placeholder logo image */
+        .logo img {
+            max-width: 40vw; /* Adjusted size for larger screens */
+            height: auto;
+        }
+
+        /* Form area */
+        .form-area {
+            display: flex;
+            flex-direction: column;
+            align-items: center; /* Centers the form elements */
+            width: 100%;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+            align-items: center; /* Centers the form elements */
+            width: 60%;
+        }
+
+        /* Input styling */
+        input[type="text"] {
+            width: 60%; /* Reduced width to fit within larger container */
+            padding: 10px;
+            font-size: 1.2em;
+            margin-bottom: 20px;
+            border: none;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            text-align: center; /* Centers the text inside the input */
+        }
+
+        /* Submit button styling */
+        button {
+            padding: 10px 20px;
+            font-size: 1.2em;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            margin: 10px;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        .bubble-button {
+            padding: 5px 10px;
+            margin: 5px;
+            font-size: 1.1em;
+        }
+
+        /* Mascot container */
+        .mascot-container {
+            flex: 2;
+            top: 5%; /* Add some margin from the top */
+            left: 5%; /* Add some margin from the left */
+            display: flex;
+            align-items: center;
+            height: 90vh; /* Full height of the screen */
+            justify-content: center; /* Center vertically within its area */
+            margin-top: 0; /* Ensure no extra margin interferes with centering */
+            z-index: 9; /* Ensures the bubble is on top of the container */
+        }
+
+
+        /* Mascot image */
+        .mascot {
+            height: 90vh; /* Full height of the screen */
+            width: auto;
+            margin-bottom: 10px;
+        }
+
+        /* Speech bubble styling */
+        .speech-bubble {
+            position: relative;
+            top: -20%;
+            transform: translateY(-50%); /* Center vertically */
+            background-color: rgba(255, 255, 255, 0.9);
+            border-radius: 20px;
+            padding: 10px;
+            max-width: 20vw;
+            text-align: center;
+            font-size: 1em;
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+            z-index: 10; /* Ensures the bubble is on top of the container */
+            margin-left: 20px; /* Increased margin for more space */
+        }
+
+        /* Arrow for the speech bubble */
+        .speech-bubble::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: -15px; /* Move arrow to the left of the speech bubble */
+            margin-top: -10px; /* Adjust positioning */
+            border-width: 10px;
+            border-style: solid;
+            border-color: transparent rgba(255, 255, 255, 0.9) transparent transparent; /* Change to match the bubble */
+        }
+
+        /* Overlay styling */
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(128, 128, 128, 0.5); /* Gray overlay */
+            z-index: 5; /* Behind the speech bubble */
+            display: none; /* Initially hidden */
+        }
+
+    </style>
+    <script src="https://cdn.jsdelivr.net/combine/npm/tone@14.7.58,npm/@magenta/music@1.23.1/es6/core.js,npm/focus-visible@5,npm/html-midi-player@1.4.0"></script>
+</head>
+<body>
+
+    <div class="main-container">
+
+        <!-- Mascot and Speech Bubble -->
+        <div class="mascot-container">
+            <div class="container">
+                <img src="/static/Bastien.png" alt="Mascot" class="mascot">
+            </div>
+            <div class="speech-bubble" id="speech-bubble">
+                <p>Well done! We've reached the end of the experiment.</p>
+                <p>Here's your song!</p>
+                <p>Thanks for participating!</p>
+                <p>Please remember to log out using the button!</p>
+            </div>
+        </div>
+
+        <div class="container">
+            <!-- Title Area -->
+            <div class="title-area">
+                <h1>Your best rated song!</h1>
+            </div>
+            <!-- Image/Plot -->
+            <midi-visualizer type="piano-roll" id="museGANVisualizer" src="{{mid}}"></midi-visualizer>
+            <midi-player src="{{mid}}" sound-font visualizer="#museGANVisualizer" id="museGANPlayer">
+            </midi-player>           
+            
+            <a href="{{mid}}" download="GPianoroll_sample.mid">Click here to download your MIDI file!</a>
+
+            <div class="form-area">
+                <form action="/logout" method="POST">
+                    <button type="submit">Logout</button>
+                </form>
+            </div>
+
+        </div>
+
+    </div>
+
+</body>
+</html>
