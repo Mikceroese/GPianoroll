@@ -32,10 +32,6 @@ from pianoroll_gui import *
 
 from utils import *
 
-# Python3 compat
-if hasattr(__builtins__, 'raw_input'):
-    input = raw_input
-
 # -.-*-.-*-.-*-.-*-.-*-.-*-.-*-.-*-.-*-.-*-.-*- #
 
 # Model instantiation
