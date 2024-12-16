@@ -17,6 +17,7 @@
 # Import zone
 
 import numpy as np
+import matplotlib.pyplot as plt
 
 class BayesOptDict():
 
@@ -108,7 +109,7 @@ class BayesOptDict():
 
     def set_score(self,idx,score):
 
-        mY[idx] = score
+        self.mY[idx] = score
 
     def set_init_samples(self,n_init_samples):
 
@@ -117,3 +118,24 @@ class BayesOptDict():
     def set_num_iter(self,n_iter):
 
         self.params[self.param_idxs['mParameters.n_iterations']] = ('mParameters.n_iterations',str(n_iter)+'\n')
+
+    def print_curve(self):
+    
+        it = np.array(range(len(self.mY)))
+        res = np.zeros_like(self.mY)        
+        current_best = 1000000
+
+        for i, y in enumerate(self.mY):
+            if y < current_best:
+                current_best = y
+            res[i] = current_best
+
+        plt.plot(it+1,res, 'r,-', linewidth=2)
+        plt.show()
+
+
+if __name__ == "__main__":
+
+    bo_dict = BayesOptDict('exps/0_Mik_10-08-2024_10:46:52.txt')
+    bo_dict.print_curve()
+

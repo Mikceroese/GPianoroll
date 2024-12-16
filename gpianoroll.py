@@ -239,7 +239,7 @@ for i in range(21):
     bo_dict.add_sample(mid_sample,bo.mid_score)
 
 bo_dict.set_init_samples(params['n_init_samples']+21)
-bo_dict.set_num_iter(32)
+bo_dict.set_num_iter(42)
 bo_dict.save_txt(params['save_filename'])
 
 params['n_init_samples'] += 21

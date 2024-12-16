@@ -30,6 +30,12 @@ beat_resolution = 4  # temporal resolution of a beat (in timestep)
 n_beats_per_measure = 4
 measure_resolution = 4 * beat_resolution
 tempo_array = np.full((n_measures * n_beats_per_measure * beat_resolution, 1), tempo)
+note_thresholds = [0.60828567, 0.55597573, 0.54794814] 
+# Values lower than this are considered silence. Note that this value
+# directly influences metrics. These three values were obtained via BO
+th_tensor = torch.tensor(note_thresholds).view(1,3,1,1)
+if torch.cuda.is_available():
+  th_tensor = th_tensor.cuda()
 
 latent_dim = 256
 
@@ -257,6 +263,181 @@ class Discriminator(torch.nn.Module):
 
 # -.-*-.-*-.-*-.-*-.-*-.-*-.-*-.-*-.-*-.-*-.-*- #
 
+# Autoencoder
+
+class Encoder(torch.nn.Module):
+      
+    def __init__(self):
+        super().__init__()
+
+        # Comments next to layers indicate the shape of the output,
+        # in the form <M,T,P> (Measure,Time,Pitch)
+
+        # Mirror the private time-pitch network (so now it's pitch-time)
+        self.pt_conv0 = torch.nn.ModuleList([
+            DiscriminatorBlock(1, 16, (1, 1, 12), (1, 1, 12)) for _ in range(n_tracks) # 4, 16, 6
+        ])
+        self.pt_conv1 = torch.nn.ModuleList([
+            DiscriminatorBlock(16, 64, (1, 2, 1), (1, 2, 1)) for _ in range(n_tracks) # 4, 8, 6
+        ])
+        # Mirror the private pitch-time network (so now it's time-pitch)
+        self.tp_conv0 = torch.nn.ModuleList([
+            DiscriminatorBlock(1, 16, (1, 2, 1), (1, 2, 1)) for _ in range(n_tracks) # 4, 8, 72
+        ])
+        self.tp_conv1 = torch.nn.ModuleList([
+            DiscriminatorBlock(16, 64, (1, 1, 12), (1, 1, 12)) for _ in range(n_tracks) # 4, 8, 6
+        ])
+        # Mirror the shared network
+        self.conv2 = DiscriminatorBlock(64 * n_tracks * 2, 128, (1, 2, 2), (1, 2, 2)) # 4, 4, 3
+        self.conv3 = DiscriminatorBlock(128, 256, (1, 4, 3), (1, 4, 3)) # 4, 1, 1
+
+        # Chroma stream
+        self.chroma_conv0 = DiscriminatorBlock(n_tracks,64,(1,1,12),(1,1,12)) # 4, 4, 1
+        self.chroma_conv1 = DiscriminatorBlock(64,128,(1,4,1),(1,4,1)) # 4, 1, 1
+
+        # Onset/Offset stream
+        self.onoff_conv0 = DiscriminatorBlock(n_tracks,64,(1,4,1),(1,4,1)) # 4, 4, 1
+        self.onoff_conv1 = DiscriminatorBlock(64,128,(1,4,1),(1,4,1)) # 4, 1, 1
+
+        # Merge streams
+        self.conv4 = DiscriminatorBlock(512, latent_dim, (2, 1, 1), (1, 1, 1)) # 3, 1, 1
+        self.conv5 = DiscriminatorBlock(latent_dim, latent_dim, (3, 1, 1), (3, 1, 1)) # 1, 1, 1
+
+    def forward(self, x):
+
+        # x has shape <B,I,T,P>
+        # (Batch, Instrument, Time and Pitch)
+        # Instruments are considered channels
+
+        # Extract chroma feature
+        chroma = x.view(-1, n_tracks, n_measures, n_beats_per_measure, beat_resolution, n_pitches)
+        chroma = torch.sum(chroma,4) # 4, 4, 72
+        chroma = chroma.view(-1, n_tracks, n_measures, n_beats_per_measure, n_pitches//12, 12)
+        chroma = torch.sum(chroma,4) # 4, 4, 6
+
+        # Extract onset/offset feature
+        # Heads-up: PyTorch's padding starts from the last dimension.
+        # We want to pad the Time dimension (second to last)
+        # (0,0,1,0) means "Don't pad the Pitch dimension, add 1 padding
+        # at the top of the Time dimension".
+        onoff = torch.nn.functional.pad(x[:,:,:-1],(0,0,1,0))
+        onoff = x - onoff
+        onoff = onoff.view(-1, n_tracks, n_measures, measure_resolution, n_pitches)
+        onoff = torch.sum(onoff,4,keepdim=True) # 4, 16, 1
+
+        # Compute the private instrument networks
+        x = x.view(-1, n_tracks, 1, n_measures, measure_resolution, n_pitches)
+        # Pitch-time
+        x_pt = [conv(x[:,i]) for i, conv in enumerate(self.pt_conv0)]
+        x_pt = torch.cat([conv(x_) for x_, conv in zip(x_pt, self.pt_conv1)], 1)
+        # Time-pitch
+        x_tp = [conv(x[:,i]) for i, conv in enumerate(self.tp_conv0)]
+        x_tp = torch.cat([conv(x_) for x_, conv in zip(x_tp, self.tp_conv1)], 1)
+        # Shared network
+        x = torch.cat([x_pt,x_tp],1)
+        x = self.conv2(x)
+        x = self.conv3(x)
+
+        # Chroma stream
+        c = self.chroma_conv0(chroma)
+        c = self.chroma_conv1(c)
+
+        # Osset/offset stream
+        o = self.onoff_conv0(onoff)
+        o = self.onoff_conv1(o)
+
+        # Merge streams
+        x = torch.cat([x,c,o],1)
+        x = self.conv4(x)
+        x = self.conv5(x)
+        x = x.view(-1, latent_dim)
+
+        return x
+
+class LinearLReLUBlock(torch.nn.Module):
+    def __init__(self, input_dim, output_dim):
+        super().__init__()
+        self.dense = torch.nn.Linear(input_dim,output_dim)
+        self.batchnorm = torch.nn.BatchNorm1d(output_dim)
+        self.lrelu = torch.nn.LeakyReLU()
+
+    def forward(self,x):
+        x = self.lrelu(self.batchnorm(self.dense(x)))
+        return x
+    
+class VarAutoencoder(torch.nn.Module):
+    def __init__(self,encoder,decoder):
+        super().__init__()
+        self.enc = encoder
+        self.dec = decoder
+
+        self.dense_enc1 =  LinearLReLUBlock(latent_dim,128)
+        self.dense_enc2 =  LinearLReLUBlock(128,64)
+        self.dense_enc3 =  LinearLReLUBlock(64,32)
+        self.dense_enc4 =  LinearLReLUBlock(32,10)
+        self.mus = torch.nn.Linear(10,10)
+        self.sigmas = torch.nn.Linear(10,10)
+        self.dense_dec1 =  LinearLReLUBlock(10,32)
+        self.dense_dec2 =  LinearLReLUBlock(32,64)
+        self.dense_dec3 =  LinearLReLUBlock(64,128)
+        self.dense_dec4 =  torch.nn.Linear(128,latent_dim)
+
+        self.N = torch.distributions.Normal(0,1)
+        if torch.cuda.is_available():
+          self.N.loc = self.N.loc.cuda()
+          self.N.scale = self.N.scale.cuda()
+
+        self.kl = 0
+
+    def forward(self, x):
+
+        #Encode the input
+        x = self.get_encoding(x)
+
+        #Extract the distributions
+        mu = self.mus(x)
+        mu2 = torch.pow(mu,2)
+        sigma = self.sigmas(x)
+        sigma2 = torch.pow(sigma,2)
+        #Sanity check, in case some wild zero appears in sigma2
+        sigma2+=1e-6
+        #Sample the distributions
+        z = mu + sigma*self.N.sample(mu.shape)
+        #Compute KL divergence
+        self.kl = (mu2 + sigma2 - torch.log(sigma2) - 0.5).mean()
+
+        # Decode the latent space
+        x = self.get_decoded_sample(z)
+        # Smooth thresholding
+        x = torch.sigmoid(10*(x-th_tensor))
+
+        return x
+
+    def get_encoding(self, x):
+
+        x = self.dense_enc1(self.enc(x))
+        x = self.dense_enc2(x)
+        x = self.dense_enc3(x)
+        x = self.dense_enc4(x)
+
+    def get_highdim(self,x):
+       
+        x = self.dense_dec1(x)
+        x = self.dense_dec2(x)
+        x = self.dense_dec3(x)
+        x = self.dense_dec4(x)
+
+        return x
+    
+    def get_decoded_sample(self,x):
+       
+        x = self.dec(self.get_highdim(x))
+
+        return x
+
+
+# -.-*-.-*-.-*-.-*-.-*-.-*-.-*-.-*-.-*-.-*-.-*- #
+
 # Sample management
 
 def clip_samples(samples,thresholds):
@@ -294,9 +475,9 @@ def samples_to_multitrack(samples):
 
   return m
 
-def write_sample(m, sf2_path, file_name = "sample"):
+def write_sample(m, sf2_path, file_name = "sample", write_wav = False):
     """
-    Save the Multitrack object m as midi and wav
+    Save the Multitrack object m as midi and optionally wav
     """
 
     npz_name = file_name+".npz"
@@ -307,9 +488,10 @@ def write_sample(m, sf2_path, file_name = "sample"):
     m = pypianoroll.load(npz_name)
     remove(npz_name)
     m.write(midi_name)
-    music = PrettyMIDI(midi_file=midi_name)
-    waveform = music.fluidsynth(sf2_path=sf2_path,fs=44100.0) # fluidsynth needs the sample frequency as a float,
-    scipy.io.wavfile.write(wav_name,44100,waveform) # but scipy needs an integer. Care.
+    if write_wav:
+        music = PrettyMIDI(midi_file=midi_name)
+        waveform = music.fluidsynth(sf2_path=sf2_path,fs=44100.0) # fluidsynth needs the sample frequency as a float,
+        scipy.io.wavfile.write(wav_name,44100,waveform) # but scipy needs an integer. Care.
 
 
 # -.-*-.-*-.-*-.-*-.-*-.-*-.-*-.-*-.-*-.-*-.-*- #
@@ -376,7 +558,6 @@ def empty_bar_ratio(samples_np,verbose=True):
   torch.cuda.empty_cache()
 
   return np.array(ebrs)
-
 
 def used_pitch_classes(samples_np,verbose=True):
     """
@@ -525,37 +706,4 @@ def tonal_distance(samples_np,verbose=True):
   # end for t1
 
   return scores
-
-def empty_bar_ratio_lowmem(samples_np,verbose=True,splits=4):
-
-    ebrs=np.zeros(samples_np.shape[1])
-    split_size=samples_np.shape[0]//4
-    for i in range(splits):
-        if i==(splits-1):
-            ebrs+=empty_bar_ratio(samples_np[i*split_size:],verbose=False)
-        else:
-            ebrs+=empty_bar_ratio(samples_np[i*split_size:(i+1)*split_size],verbose=False)
-    ebrs/=splits
-    if verbose:
-        for i in range(samples_np.shape[1]):
-            print("Empty Bar ratio for",track_names[i],":")
-            print(ebrs[i])
-    return ebrs
-
-def used_pitch_classes_lowmem(samples_np,verbose=True,splits=4):
-
-    upcs=np.zeros(samples_np.shape[1]-1)
-    split_size=samples_np.shape[0]//4
-    for i in range(splits):
-        if i==(splits-1):
-            upcs+=used_pitch_classes(samples_np[i*split_size:],verbose=False)
-        else:
-            upcs+=used_pitch_classes(samples_np[i*split_size:(i+1)*split_size],verbose=False)
-    upcs/=splits
-    if verbose:
-        for i in range(1,samples_np.shape[1]):
-            print("Used pitch classes for",track_names[i],":")
-            print(upcs[i-1])
-
-    return upcs
 
