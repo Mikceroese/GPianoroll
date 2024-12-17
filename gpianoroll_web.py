@@ -36,10 +36,10 @@ class GPianorollWeb(BayesOptWeb):
         super().__init__(self.n,'gpianoroll_query.html')
 
         params = {}
-        params['n_init_samples'] = 1
+        params['n_init_samples'] = 14
         params['init_method'] = 2 # Sobol
         params['noise'] = 1e-2 # Default 1e-6
-        params['n_iterations'] = 0
+        params['n_iterations'] = 15
         params['n_iter_relearn'] = 1
         params['l_type'] = 'mcmc'
         params['load_save_flag'] = 2 # 2 - Save
@@ -64,27 +64,31 @@ class GPianorollWeb(BayesOptWeb):
         self.mat_A = np.random.randn(self.n,self.true_n)
         # Precalculate variances for remapping
         # (See 'remap_query' below)
-        self.vars = np.sum(np.square(self.mat_A),axis=0)
-        self.stds = np.sqrt(self.vars)
+        self.stds = np.sqrt(np.sum(np.square(self.mat_A),axis=0))
+        self.scale = np.linalg.norm(self.stds)
 
         # Set maximum and minimum scores
         self.min_score = 0.0
         self.max_score = 100.0
-        self.best_score = -1.0
+        self.best_score = 0
+        self.best_result = 1000000000
         self.mid_score = -1.0
 
         self.current_iter = 1
         self.best_iter = 1
 
-        self.mid_query = render_template('gpianoroll_query.html',
-                                         mid='/static/mid_sample.mid')
+        self.helper_visibility = "visible"
+
+        self.mid_query = self.make_query(np.ones(self.n),first=True)
         self.mid_score = 0.0        
 
     # Call to set the result and notiying it
     def set_result(self,result):
-        self.result = 1- ((result - self.min_score) / self.max_score)
-        if self.result < self.best_score:
-            self.best_score = self.result
+        self.result = 1- ((result - self.min_score) / (self.max_score-self.min_score))
+        if self.result <= self.best_result:
+            self.best_score = result
+            self.best_result = self.result
+            write_sample(self.m,self.best_sample_name)
         self.result_ready.set()
 
     def uniform_to_normal(self,query):
@@ -119,7 +123,7 @@ class GPianorollWeb(BayesOptWeb):
         # Thus, we can remap each of this components to ~N(0,1)
         # using the precalculated standard deviations:
 
-        q = np.divide(q,self.stds)
+        q = np.divide(q,self.scale)
 
         # Clip the resulting query
         q = np.clip(q,-4.0,4.0)
@@ -137,12 +141,17 @@ class GPianorollWeb(BayesOptWeb):
         sample = clip_samples(sample,note_thresholds)
         return sample
 
-    def make_query(self,query):
+    def make_query(self,query,first=False):
         sample = self.generate_sample(query)
-        m = samples_to_multitrack(tensor_to_np(sample))
-        write_sample(m,self.sample_name)
+        self.m = samples_to_multitrack(tensor_to_np(sample))
+        write_sample(self.m,self.sample_name)
+        if first:
+            write_sample(self.m,self.best_sample_name)
         self.query = render_template(self.query_template,
-                                     mid=self.sample_url)
+                                    mid=self.sample_url,
+                                    best_mid=self.best_sample_url,
+                                    best_score=int(self.best_score),
+                                    helpervisible=self.helper_visibility)
         return self.query
 
     def targetFunction(self):
@@ -154,7 +163,7 @@ class GPianorollWeb(BayesOptWeb):
             self.query_ready.set()
             self.wait_for_result()
             self.mid_score = self.result
-            self.best_score = self.mid_score
+            self.best_result = self.mid_score
 
             self.mvalue, self.x_out, self.error = BayesOptContinuous.optimize(self)
             # Optimization is not done, just paused
@@ -225,6 +234,10 @@ class GPianorollWebPool(BayesOptWebPool):
         else:
             self.id_semaphore.release()
             return -1, True
+
+    def set_exp_helper_visibility(self, id, visible='visible'):
+        if id in self.pool:
+            self.pool[id].helper_visibility=visible
 
     def remove_exp(self, id):
         ret = (id in self.pool) and (self.pool[id].has_finished() or
@@ -298,14 +311,14 @@ def query_input():
         global bo_web_pool
 
         bo_id = session['bo_id']
+        helper_visible = request.form['helper-state']
         q_result = float(request.form['score'])
+        bo_web_pool.set_exp_helper_visibility(bo_id,helper_visible)
         bo_web_pool.set_exp_query_result(bo_id,q_result)
         finished = bo_web_pool.wait_for_exp_eval(bo_id)
         if not finished:
-            print("OOOOOOO")
             return redirect(url_for('query'))
         else:
-            print("UUUUUUUUU")
             bo_result, mid_url, ret = bo_web_pool.remove_exp(bo_id)
             session['bo_result'] = bo_result
             session['bo_mid_url'] = mid_url
@@ -317,7 +330,6 @@ def end_exp():
     if ('bo_id' not in session) or ('bo_result' not in session):
         redirect(url_for('index'))
     else:
-
         mid_url = session['bo_mid_url']
         return render_template('gpianoroll_result.html',mid=mid_url)
     

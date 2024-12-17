@@ -212,12 +212,12 @@
                 "Long story short, it allows you to generate short music sequences with AI assistance.",
                 "Technology and music all together! Isn't it fun?"
             ],
-            option1_1:[ /*Isn't AI art like... evil?*/
-                "Sometimes, depending on who you ask and the specific case...",
+            option1_1:[ /*I read some strong opinions about AI art...*/
+                "It is a heavy topic, but bear in mind it is not the main point of this work.",
+                "This app's goal isn't to make an 'AI composer', but to test BO on something as abstract as human taste.",
+                "\"Sure, it can make a machine play chess and go at Greatmaster level, but can it *JAM*?\"",
                 "The two main points against AI going artistic are content theft and job intrusism. Fair points, but not GPianoroll's case.",
                 "Our AI was trained using public domain music made into MIDI, which can be accessed for free and with no copyrights infringed.",
-                "And this app's goal isn't to make an 'AI composer', but to test BO on something as abstract as human taste.",
-                "\"Sure, it can make a machine play chess and go at Greatmaster level, but can it *JAM*?\"",
                 "Besides, our jingles just last for 10 seconds, so, honestly, we are no threat to artists.",
                 "In fact, all my dialogues and my character design are human-created! We support art!"
             ],
@@ -225,14 +225,15 @@
                 "First, you enter a username. It can be any name, really. We will just use it, with the date and time, to identify the songs you generate.",
                 "Once you enter, we ask a Deep Learning model to generate a 10 second song, and then you can listen to it.",
                 "Then you need to grade it, the program learns which pieces you like and which you don't, and progressively becomes better at making the ones you *do* like.",
-                "It takes about 30 mins, on average, but  in an uncontroled environment like the Internet, it can be faster or slower.",
+                "It takes about 30 mins, on average, but in an uncontroled environment like the Internet, it can be faster or slower.",
                 "I can tell you more about it once we begin an experiment."
             ],
             option3: [ /*... BAstIEn?*/
                 "It stands for 'Bayesian Application assiSTant for Interface ENgagement'!",
                 "It basically means I'm a cute face to put in front of the app, so it is more appealing!",
                 "That way, more users can contribute to making science!",
-                "Also I'll be the one in charge of answering your questions, if you have any."
+                "... though you can always hide me in case you don't like me. No pressure.",
+                "I'll also be answering your questions, if you have any. Just say the word."
             ]
         };
 
@@ -300,7 +301,7 @@
 
             if (currentOption=='option1'){
                 bubble_buttons.innerHTML += `
-                    <button class="bubble-button" id="option1_1">Isn't AI art like... evil?</button>
+                    <button class="bubble-button" id="option1_1">I read some strong opinions about AI art...</button>
                     <button class="bubble-button" id="option2">How does this app work?</button>
                 `
                 assignButtonListeners()

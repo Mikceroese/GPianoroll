@@ -254,14 +254,27 @@
         
         <!-- Main Area for Image/Plot Display -->
         <div class="main-area" id="main-area">
-            <!-- Title Area -->
-            <div class="title-area">
-                <h1>Here's your song. Rate it:</h1>
-            </div>
             <!-- Image/Plot -->
-            <midi-visualizer type="piano-roll" id="museGANVisualizer" src="{{mid}}"></midi-visualizer>
-            <midi-player src="{{mid}}" sound-font visualizer="#museGANVisualizer" id="museGANPlayer">
-            </midi-player>            
+             <div class="container">
+                <div class="vertical_container">
+                    <!-- Title Area -->
+                    <div class="title-area">
+                        <h2>Here's your song. Rate it:</h2>
+                    </div>
+                    <midi-visualizer type="piano-roll" id="museGANVisualizer" src="{{mid}}"></midi-visualizer>
+                    <midi-player src="{{mid}}" sound-font visualizer="#museGANVisualizer" id="museGANPlayer">
+                    </midi-player>
+                </div>
+                <div class="vertical_container">
+                    <!-- Title Area -->
+                    <div class="title-area">
+                        <h2>Best rated song ({{best_score}}/100):</h2>
+                    </div>
+                    <midi-visualizer type="piano-roll" id="museGANVisualizer" src="{{best_mid}}"></midi-visualizer>
+                    <midi-player src="{{best_mid}}" sound-font visualizer="#museGANVisualizer" id="museGANPlayer">
+                    </midi-player>
+                </div>  
+             </div>         
             <!-- Toggle Sidebar Button -->
             <button class="toggle-sidebar" id="toggle-sidebar-btn">Toggle sidebar</button>
             <button class="toggle-mascot" id="toggle-mascot-btn">Toggle helper</button>
@@ -275,6 +288,8 @@
                 <input type="range" id="score-slider" name="score" min="0" max="100" value="50">
                 <!-- Textbox Input -->
                 <input type="text" id="score-textbox" value="50">
+                <!-- Helper visible -->
+                <input type="hidden" id="helper-state" name="helper-state" value="{{helpervisible}}">
                 <!-- Submit Button -->
                 <button type="submit">Submit Score</button>
             </form>
@@ -291,6 +306,7 @@
         const speechBubble = document.getElementById('speech-bubble');
         const toggleBtn = document.getElementById('toggle-sidebar-btn');
         const toggleMascotBtn = document.getElementById('toggle-mascot-btn');
+        const mascotState = document.getElementById('helper-state')
 
         // Synchronize slider and textbox values
         slider.addEventListener('input', function() {
@@ -320,6 +336,19 @@
             mascot.classList.toggle('mascot-hidden');
             mascotSidebar.classList.toggle('mascot-container-hidden');
             speechBubble.classList.toggle('speech-bubble-hidden');
+            if (mascot.classList.contains('mascot-hidden')) {
+                mascotState.value = 'hidden';
+            } else {
+                mascotState.value = 'visible';
+            }
+        });
+
+        document.addEventListener('DOMContentLoaded', () => {
+            if (mascotState.value == 'hidden'){
+                mascot.classList.add('mascot_hidden')
+                mascotSidebar.classList.add('mascot-container-hidden');
+                speechBubble.classList.add('speech-bubble-hidden');
+            }
         });
 
         // Function to reset the dialogue and buttons
@@ -338,7 +367,9 @@
         const option1 = document.getElementById('option1');
 
         dialogues = [
-            "In the middle area, there should be a MIDI player. If you press the play button, you can listen to it.",
+            "In the middle area, there should be two MIDI players.",
+            "The left one shows the las generated song. The right one shows the one you rated best so far.",
+            "If you press the play button, you can listen to them.",
             "Then, to the right, you should see a sidebar. If it is not there, toggle it using the bottom left button.",
             "Use either the slider or the textbox to input a score. Scores go from 0 to 100, and the higher the better.",
             "Also, if you happen to give the same score to two samples, the most recent is considered best.",
