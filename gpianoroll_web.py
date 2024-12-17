@@ -36,10 +36,10 @@ class GPianorollWeb(BayesOptWeb):
         super().__init__(self.n,'gpianoroll_query.html')
 
         params = {}
-        params['n_init_samples'] = 14
+        params['n_init_samples'] = 2
         params['init_method'] = 2 # Sobol
         params['noise'] = 1e-2 # Default 1e-6
-        params['n_iterations'] = 15
+        params['n_iterations'] = 0
         params['n_iter_relearn'] = 1
         params['l_type'] = 'mcmc'
         params['load_save_flag'] = 2 # 2 - Save
@@ -164,6 +164,7 @@ class GPianorollWeb(BayesOptWeb):
             self.wait_for_result()
             self.mid_score = self.result
             self.best_result = self.mid_score
+            self.eval_done.set()
 
             self.mvalue, self.x_out, self.error = BayesOptContinuous.optimize(self)
             # Optimization is not done, just paused
@@ -182,8 +183,8 @@ class GPianorollWeb(BayesOptWeb):
                 mid_sample[np.arange(0,self.n,2)] = 1 - 1e-6
                 bo_dict.add_sample(mid_sample,self.mid_score)
 
-            bo_dict.set_init_samples(self.params['n_init_samples'])
-            bo_dict.set_num_iter(self.params['n_init_samples']*2)
+            bo_dict.set_init_samples(self.params['n_init_samples']*2)
+            bo_dict.set_num_iter(self.params['n_init_samples'])
             bo_dict.save_txt(self.params['save_filename'])
 
             # We include 21 points mapped to the center of the latent

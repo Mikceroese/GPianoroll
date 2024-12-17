@@ -64,6 +64,7 @@ class BayesOptAsynchronous(BayesOptContinuous):
     # Sends the optimization thread to sleep
     def wait_for_result(self):
         self.result_ready.wait()
+        self.result_ready.clear()
 
     # -.-*-.-*-.-*-.-*-.-*-.-*-.-*-.-*-.-*-.-*-.-*-.-*-
     # Query functions
@@ -98,8 +99,6 @@ class BayesOptAsynchronous(BayesOptContinuous):
         self.wait_for_result()
         # The optimization thread is blocked here until 
         # 'set_result' is called.
-        
-        self.result_ready.clear()
 
         self.it_semaphore.acquire()
         self.remaining_iterations -= 1
