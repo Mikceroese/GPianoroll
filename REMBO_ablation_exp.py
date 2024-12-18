@@ -143,10 +143,8 @@ class BayesOptMuseGAN(BayesOptContinuous):
 
         self.n = rembo_dim
         self.mat_A = np.random.randn(self.n,true_dim)
-        # Precalculate variances for remapping
-        # (See 'remap_query' below)
-        self.stds = np.sqrt(np.sum(np.square(self.mat_A),axis=0))
-        self.scale = np.linalg.norm(self.stds)
+        Q , _ = np.linalg.qr(self.mat_A.T)
+        self.mat_Q = Q.T
 
         self.asl = AssymetricLoss(gamma_neg=16,gamma_pos=4,disable_torch_grad_focal_loss=True)
         if torch.cuda.is_available():
@@ -176,22 +174,7 @@ class BayesOptMuseGAN(BayesOptContinuous):
     def remap_query(self,query):
 
         # Map query to the high-dimensional space
-        q = np.matmul(query,self.mat_A)
-
-        # Queries are mapped to a ~N(0,1) distribution
-        # using the Box-Muller transform.
-        # Therefore, the vector-matrix product (q)
-        # results in a vector of sums of Normal distributions,
-        # which are Normal themselves.
-
-        # Each component i of the resulting vector will follow a Normal
-        # distribution with mean 0 and variance V[i] equal
-        # to the sum of the squares of the i-th column of mat_A.
-
-        # Thus, we can remap each of this components to ~N(0,1)
-        # using the precalculated variances:
-
-        q = np.divide(q,self.scale)
+        q = np.matmul(query,self.mat_Q)
 
         # Clip the resulting query
         q = np.clip(q,-4.0,4.0)
@@ -278,7 +261,7 @@ colors = ['r','g','b']
 rembo_dim = 10
 clipping = True
 n_init = 10
-n_samples = 10
+n_samples = 60
 rembo_n = 3
 
 results = {}
@@ -317,7 +300,7 @@ fig.suptitle("Historic best through optimization")
 for i in range(len(losses)):
     axs[i][0].set_ylabel(losses[i])
 for i in range(len(losses)):
-    axs[0][i].set_xlabel("Optimizing "+losses[i])
+    axs[0][i].set_xlabel("Iterations\noptimizing "+losses[i])
 
 for i_l, loss in enumerate(losses):
                 
