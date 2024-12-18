@@ -28,15 +28,20 @@ class GPianorollWeb(BayesOptWeb):
     # which will make the template filled with the appropriate
     # representation of the query accesible with 'get_query'.
 
-    def __init__(self,name):
+    def __init__(self,name,control_group=False):
 
         self.n = 10
         self.true_n = 256
 
+        self.control = control_group
+        if self.control:
+            self.n = self.true_n
+
         super().__init__(self.n,'gpianoroll_query.html')
 
+        # Default parameters
         params = {}
-        params['n_init_samples'] = 2
+        params['n_init_samples'] = 21
         params['init_method'] = 2 # Sobol
         params['noise'] = 1e-2 # Default 1e-6
         params['n_iterations'] = 0
@@ -46,6 +51,10 @@ class GPianorollWeb(BayesOptWeb):
         params['save_filename'] = "exps/"+name+".txt"
         params['verbose_level'] = 5 # Debug -> logfile
         params['log_filename'] = "exps/"+name+"_log.txt"
+
+        # Control group parameters
+        if self.control:
+            params['n_init_samples'] = 63 # +1 for the mid sample
 
         self.params = params
 
@@ -62,10 +71,8 @@ class GPianorollWeb(BayesOptWeb):
 
         self.true_n = 256 # True dimension of the model's input
         self.mat_A = np.random.randn(self.n,self.true_n)
-        # Precalculate variances for remapping
-        # (See 'remap_query' below)
-        self.stds = np.sqrt(np.sum(np.square(self.mat_A),axis=0))
-        self.scale = np.linalg.norm(self.stds)
+        Q , _ = np.linalg.qr(self.mat_A.T)
+        self.mat_Q = Q.T
 
         # Set maximum and minimum scores
         self.min_score = 0.0
@@ -108,22 +115,7 @@ class GPianorollWeb(BayesOptWeb):
     def remap_query(self,query):
 
         # Map query to the high-dimensional space
-        q = np.matmul(query,self.mat_A)
-
-        # Queries are mapped to a ~N(0,1) distribution
-        # using the Box-Muller transform.
-        # Therefore, the vector-matrix product (q)
-        # results in a vector of sums of Normal distributions,
-        # which are Normal themselves.
-
-        # Each component i of the resulting vector will follow a Normal
-        # distribution with mean 0 and variance V[i] equal
-        # to the sum of the squares of the i-th column of mat_A.
-
-        # Thus, we can remap each of this components to ~N(0,1)
-        # using the precalculated standard deviations:
-
-        q = np.divide(q,self.scale)
+        q = np.matmul(query,self.mat_Q)
 
         # Clip the resulting query
         q = np.clip(q,-4.0,4.0)
@@ -134,9 +126,12 @@ class GPianorollWeb(BayesOptWeb):
 
         global gen
 
-        q = self.uniform_to_normal(query)
-        q = self.remap_query(q)
-        sample = gen(np_to_tensor(q))
+        if not self.control:
+            q = self.uniform_to_normal(query)
+            q = self.remap_query(q)
+            sample = gen(np_to_tensor(q))
+        else:
+            sample = gen(np_to_tensor(self.uniform_to_normal(query)))
         note_thresholds = [0.60828567, 0.55597573, 0.54794814]
         sample = clip_samples(sample,note_thresholds)
         return sample
@@ -170,34 +165,36 @@ class GPianorollWeb(BayesOptWeb):
             # Optimization is not done, just paused
             self.opt_done.clear() 
 
-            self.it_semaphore.acquire()
-            self.remaining_iterations = 2*self.params['n_init_samples']
-            self.it_semaphore.release()
-           
-            # At this point we have scores for the 21 initial samples
-            # plus the middle one.
+            if not self.control:
 
-            bo_dict = BayesOptDict(self.params['save_filename'])
-            for i in range(self.params['n_init_samples']):
-                mid_sample = np.round(np.random.uniform(size=self.n),3)
-                mid_sample[np.arange(0,self.n,2)] = 1 - 1e-6
-                bo_dict.add_sample(mid_sample,self.mid_score)
+                self.it_semaphore.acquire()
+                self.remaining_iterations = 2*self.params['n_init_samples']
+                self.it_semaphore.release()
+            
+                # At this point we have scores for the 21 initial samples
+                # plus the middle one.
 
-            bo_dict.set_init_samples(self.params['n_init_samples']*2)
-            bo_dict.set_num_iter(self.params['n_init_samples'])
-            bo_dict.save_txt(self.params['save_filename'])
+                bo_dict = BayesOptDict(self.params['save_filename'])
+                for i in range(self.params['n_init_samples']):
+                    mid_sample = np.round(np.random.uniform(size=self.n),3)
+                    mid_sample[np.arange(0,self.n,2)] = 1 - 1e-6
+                    bo_dict.add_sample(mid_sample,self.mid_score)
 
-            # We include 21 points mapped to the center of the latent
-            # space during Box-Muller. The user has only graded 22
-            # samples, but we have scores for 42.
+                bo_dict.set_init_samples(self.params['n_init_samples']*2)
+                bo_dict.set_num_iter(self.params['n_init_samples'])
+                bo_dict.save_txt(self.params['save_filename'])
 
-            self.params['n_init_samples'] *= 2
-            self.params['n_iterations'] = self.params['n_init_samples']
-            self.params['load_save_flag'] = 3 # 3 - Load and save
-            self.params['load_filename'] = self.params['save_filename']
+                # We include 21 points mapped to the center of the latent
+                # space during Box-Muller. The user has only graded 22
+                # samples, but we have scores for 42.
 
-            self.mvalue, self.x_out, self.error = BayesOptContinuous.optimize(self)
-            # With 42 iterations, the user will have graded 64 songs
+                self.params['n_init_samples'] *= 2
+                self.params['n_iterations'] = self.params['n_init_samples']
+                self.params['load_save_flag'] = 3 # 3 - Load and save
+                self.params['load_filename'] = self.params['save_filename']
+
+                self.mvalue, self.x_out, self.error = BayesOptContinuous.optimize(self)
+                # With 42 iterations, the user will have graded 64 songs
 
             sample = tensor_to_np(self.generate_sample(self.x_out))
             write_sample(samples_to_multitrack(sample),self.best_sample_name)
@@ -229,7 +226,7 @@ class GPianorollWebPool(BayesOptWebPool):
                 id = str(self.next_id) + "_" + str(id) + "_" + \
                      datetime.now().strftime("%m-%d-%Y_%H:%M:%S")
             self.next_id += 1
-            self.pool[id] = GPianorollWeb(id)
+            self.pool[id] = GPianorollWeb(id,control_group=True)
             self.id_semaphore.release()
             return id, False
         else:
