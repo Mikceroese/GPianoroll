@@ -498,7 +498,7 @@ def write_sample(m, sf2_path, file_name = "sample", write_wav = False):
 
 # Metric extraction functions
 
-def empty_bar_ratio(samples_np,verbose=True):
+def empty_bar_ratio(samples_np,verbose=True,std=False):
   """
   Samples are supposed to be a numpy array of shape [n,i,t,p] where
   · n is the number of samples
@@ -559,7 +559,7 @@ def empty_bar_ratio(samples_np,verbose=True):
 
   return np.array(ebrs)
 
-def used_pitch_classes(samples_np,verbose=True):
+def used_pitch_classes(samples_np,verbose=True,std=False):
     """
     Samples are supposed to be a numpy array of shape [n,i,t,p] where
     · n is the number of samples
@@ -597,20 +597,22 @@ def used_pitch_classes(samples_np,verbose=True):
     # Average over all samples
     avg_p_per_track = torch.mean(avg_p_per_sample,dim=0)
     """
-    avg_p_per_track = torch.mean(
-                        torch.mean(
-                            torch.count_nonzero(
-                                torch.sum(
-                                    torch.sum(sample_bars,dim=4),
-                                    dim = 3
-                                ), dim = 3
-                            ).type(torch.float),
-                            dim = 2
-                        ),
-                        dim = 0
+    p_per_track = torch.mean(
+                        torch.count_nonzero(
+                            torch.sum(
+                                torch.sum(sample_bars,dim=4),
+                                dim = 3
+                            ), dim = 3
+                        ).type(torch.float),
+                        dim = 2
                     )
-
+    
+    avg_p_per_track = torch.mean(p_per_track,dim=0)
     upcs=[]
+
+    if std:
+        std_p_per_track = torch.std(p_per_track,dim=0)
+        upcs_std=[]
 
     for i in range(s[1]):
         if track_names[i]=="Drums": continue
@@ -620,12 +622,24 @@ def used_pitch_classes(samples_np,verbose=True):
             print(upc)
         upcs.append(upc)
 
+        if std:
+            upc_std = std_p_per_track[i].item()
+            if verbose:
+                print("Standard dev.:",upc_std)
+            upcs_std.append(upc_std)
+
+    del p_per_track
     del avg_p_per_track
     del sample_bars
     del samples
+    if std:
+        del std_p_per_track
     torch.cuda.empty_cache()
 
-    return np.array(upcs)
+    if std:
+        return np.array(upcs), np.array(upcs_std)
+    else:
+        return np.array(upcs)
 
 # ------
 
@@ -654,7 +668,7 @@ def bar_tonal_distance(chroma1, chroma2):
   chr2 = np.sum(chroma2, axis=0)
   return tonal_dist(chr1,chr2)
 
-def tonal_distance(samples_np,verbose=True):
+def tonal_distance(samples_np,verbose=True,std=False):
   """
   Samples are supposed to be a numpy array of shape [n,i,t,p] where
   · n is the number of samples
@@ -674,7 +688,10 @@ def tonal_distance(samples_np,verbose=True):
   · m is the number of measures per sample
   · b is the timesteps in a measure (beat_resolution*beats_per_measure)
   """
-  scores = np.zeros((s[1]-1)*(s[1]-2)//2)
+  avg_scores = np.zeros((s[1]-1)*(s[1]-2)//2)
+  if std:
+     bar_scores = []
+     score_stds = np.zeros((s[1]-1)*(s[1]-2)//2)
   current_combo = 0
 
   for t1 in range(1,s[1]):
@@ -692,18 +709,53 @@ def tonal_distance(samples_np,verbose=True):
           if (np.sum(chroma2)==0.0):
             total_bars-=1
             continue
-          scores[current_combo] += bar_tonal_distance(chroma1,chroma2)
+          td = bar_tonal_distance(chroma1,chroma2)
+          avg_scores[current_combo] += td
+          if std:
+             bar_scores.append(td)
         # end for m
       # end for n
       if (total_bars==0):
-        scores[current_combo]=0
+        avg_scores[current_combo]=0
+        if std:
+           score_stds[current_combo]=0
       else:
-        scores[current_combo]/=total_bars
+        avg_scores[current_combo]/=total_bars
+        if std:
+           score_stds[current_combo]=np.std(np.array(bar_scores))
+           bar_scores = []
       if verbose:
-        print("Tonal distance",track_names[t1],"-",track_names[t2],":",scores[current_combo])
+        print("Tonal distance",track_names[t1],"-",track_names[t2],":",avg_scores[current_combo])
+        if std:
+           print("Standard dev.:",score_stds[current_combo])
       current_combo+=1
     # end for t2
   # end for t1
 
-  return scores
+  if std:
+     return avg_scores, score_stds
 
+  return avg_scores
+
+def sample_from_midi(path):
+    sample = pypianoroll.read(path)
+    sample.set_resolution(beat_resolution)
+    sample = (sample.stack() > 0)
+    sample = sample[:, :64, lowest_pitch:lowest_pitch + n_pitches]
+    if sample.shape[1]<64:
+       sample = np.pad(sample,((0,0),(0,64-sample.shape[1]),(0,0)))
+    if sample.shape[0]<3:
+        # If only one instrument appears, it's drums
+        # If only two instruments appear, it's drums and bass
+        # (Not an actual solution but it is true for our subjects)
+        if sample.shape[0]==1:
+            sample = np.pad(sample,((0,2),(0,0),(0,0)))
+        elif sample.shape[0]==2:
+            new_sample = np.zeros((3,64,72))
+            new_sample[0] = sample[0]
+            new_sample[2] = sample[1]
+            sample = new_sample
+    sample = np.array([sample])
+    print(sample.shape)
+
+    return sample

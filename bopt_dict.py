@@ -100,12 +100,29 @@ class BayesOptDict():
 
         return (self.mX[idx],self.mY[idx])
 
-    def add_sample(self,Xin,Y):
+    def add_sample(self,Xin,Y,index=-1):
 
         self.xShape[0] += 1
-        self.mX = np.vstack((self.mX,Xin))
         self.yShape += 1
-        self.mY = np.append(self.mY,Y)
+
+        if index==-1:
+            self.mX = np.vstack((self.mX,Xin))
+            self.mY = np.append(self.mY,Y)
+        else:
+            self.mX = np.vstack((self.mX[:index],Xin,self.mX[index:]))
+            self.mY = np.concatenate((self.mY[:index],Y,self.mY[index:]))
+
+    def remove_sample(self,idx,idx_end=0):
+
+        if idx_end == 0:
+            self.mX = np.delete(self.mX,idx,0)
+            self.mY = np.delete(self.mY,idx)
+        else:
+            self.mX = np.delete(self.mX,np.arange(idx,idx_end),0)
+            self.mY = np.delete(self.mY,np.arange(idx,idx_end))
+
+        self.xShape[0] -= min(1,idx_end-idx)
+        self.yShape -= min(1,idx_end-idx)
 
     def set_score(self,idx,score):
 
@@ -119,7 +136,7 @@ class BayesOptDict():
 
         self.params[self.param_idxs['mParameters.n_iterations']] = ('mParameters.n_iterations',str(n_iter)+'\n')
 
-    def print_curve(self):
+    def print_curve(self, color=None, block = False):
     
         it = np.array(range(len(self.mY)))
         res = np.zeros_like(self.mY)        
@@ -130,8 +147,10 @@ class BayesOptDict():
                 current_best = y
             res[i] = current_best
 
-        plt.plot(it+1,res, 'r,-', linewidth=2)
-        plt.show()
+        plt.plot(it+1,res,color=color,marker=',', linewidth=2)
+        plt.show(block = block)
+
+        return it
 
 
 if __name__ == "__main__":

@@ -4,6 +4,7 @@ static/*
 runs/*
 *.sf2
 /*.txt
+musegan_samples_DBG.npy
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
